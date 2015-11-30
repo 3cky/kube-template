@@ -24,6 +24,11 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 )
 
+const (
+	DEFAULT_NAMESPACE = api.NamespaceDefault
+	DEFAULT_SELECTOR  = ""
+)
+
 type Template struct {
 	desc *TemplateDescriptor
 	name string
@@ -59,15 +64,16 @@ func (t *Template) Render(c *Client) (string, error) {
 
 func funcMap(c *Client) template.FuncMap {
 	return template.FuncMap{
-		"pods": pods(c),
+		"pods":     pods(c),
+		"services": services(c),
 	}
 }
 
 // {{pods "namespace" "selector"}}
 func pods(c *Client) func(...string) ([]api.Pod, error) {
 	return func(s ...string) ([]api.Pod, error) {
-		namespace := ""
-		selector := ""
+		namespace := DEFAULT_NAMESPACE
+		selector := DEFAULT_SELECTOR
 		switch len(s) {
 		case 0:
 			break
@@ -79,10 +85,34 @@ func pods(c *Client) func(...string) ([]api.Pod, error) {
 		default:
 			return nil, fmt.Errorf("expected max 2 arguments, got %d", len(s))
 		}
-		p, err := c.Pods(namespace, selector)
+		pods, err := c.Pods(namespace, selector)
 		if err != nil {
 			return nil, err
 		}
-		return p, nil
+		return pods, nil
+	}
+}
+
+// {{services "namespace" "selector"}}
+func services(c *Client) func(...string) ([]api.Service, error) {
+	return func(s ...string) ([]api.Service, error) {
+		namespace := DEFAULT_NAMESPACE
+		selector := DEFAULT_SELECTOR
+		switch len(s) {
+		case 0:
+			break
+		case 1:
+			namespace = s[0]
+		case 2:
+			namespace = s[0]
+			selector = s[1]
+		default:
+			return nil, fmt.Errorf("expected max 2 arguments, got %d", len(s))
+		}
+		svcs, err := c.Services(namespace, selector)
+		if err != nil {
+			return nil, err
+		}
+		return svcs, nil
 	}
 }

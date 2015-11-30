@@ -43,21 +43,26 @@ func newClient(cfg *Config) (*Client, error) {
 	}, nil
 }
 
-func resolveNamespace(namespace string) string {
-	if len(namespace) > 0 {
-		return namespace
-	}
-	return api.NamespaceDefault
-}
-
 func (c *Client) Pods(namespace string, selector string) ([]api.Pod, error) {
 	s, err := labels.Parse(selector)
 	if err != nil {
 		return nil, err
 	}
-	podList, err := c.kubeClient.Pods(resolveNamespace(namespace)).List(s, nil)
+	podList, err := c.kubeClient.Pods(namespace).List(s, nil)
 	if err != nil {
 		return nil, err
 	}
 	return podList.Items, nil
+}
+
+func (c *Client) Services(namespace string, selector string) ([]api.Service, error) {
+	s, err := labels.Parse(selector)
+	if err != nil {
+		return nil, err
+	}
+	svcList, err := c.kubeClient.Services(namespace).List(s, nil)
+	if err != nil {
+		return nil, err
+	}
+	return svcList.Items, nil
 }
