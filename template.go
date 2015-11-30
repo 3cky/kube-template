@@ -30,14 +30,45 @@ const (
 )
 
 type Template struct {
+	// Template descriptor from configuration
 	desc *TemplateDescriptor
+
+	// Template name (base file name)
 	name string
+
+	// Template last output (in case of successfully rendered template)
+	lastOutput string
 }
 
 func newTemplate(d *TemplateDescriptor) *Template {
+	// Get last template output, if present
+	o, err := ioutil.ReadFile(d.Output)
+	if err != nil {
+		o = nil
+	}
+	// Create template
 	return &Template{
-		desc: d,
-		name: filepath.Base(d.Path),
+		desc:       d,
+		name:       filepath.Base(d.Path),
+		lastOutput: string(o),
+	}
+}
+
+func (t *Template) Process(c *Client) (bool, error) {
+	if r, err := t.Render(c); err == nil {
+		if changed := !(r == t.lastOutput); changed {
+			// Template output changed, write to output file
+			if err := ioutil.WriteFile(t.desc.Output, []byte(r), 0644); err != nil { // FIXME file mode from config
+				return false, err
+			}
+			t.lastOutput = r
+			return true, nil
+		}
+		// Template output not changed
+		return false, nil
+	} else {
+		// Can't render template
+		return false, err
 	}
 }
 

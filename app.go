@@ -80,9 +80,13 @@ MainLoop:
 
 func (app *App) Run() {
 	for _, t := range app.templates {
-		log.Printf("render: %s", t.name)
-		if rendered, err := t.Render(app.client); err == nil {
-			log.Printf("rendered %s:\n %s", t.name, rendered)
+		log.Printf("process template: %s", t.name)
+		if updated, err := t.Process(app.client); err == nil {
+			if updated {
+				log.Printf("template output changed: %s\n %s", t.name, t.lastOutput)
+			} else {
+				log.Printf("template output not changed: %s", t.name)
+			}
 		} else {
 			log.Printf("can't render %v", err)
 		}
