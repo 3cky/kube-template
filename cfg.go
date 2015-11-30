@@ -26,6 +26,8 @@ import (
 var cfgFile string
 
 type Config struct {
+	Server string
+
 	// Template paths
 	templatePaths map[string]bool
 
@@ -42,7 +44,7 @@ type TemplateDescriptor struct {
 	Command string
 }
 
-func initConfigFile() {
+func readConfig(cmd *cobra.Command) {
 	if cfgFile != "" { // enable ability to specify config file via flag
 		viper.SetConfigFile(cfgFile)
 	}
@@ -50,6 +52,8 @@ func initConfigFile() {
 	viper.SetConfigName("kube-template") // name of config file (without extension)
 	viper.AddConfigPath(".")             // adding home directory as first search path
 	viper.AutomaticEnv()                 // read in environment variables that match
+
+	viper.BindPFlag("server", cmd.Flags().Lookup("server"))
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
@@ -85,6 +89,9 @@ func parseTemplateDescriptor(s string) (*TemplateDescriptor, error) {
 func newConfig(cmd *cobra.Command) (*Config, error) {
 	// Create empty config
 	config := new(Config)
+	// Read config from file, if present
+	readConfig(cmd)
+	config.Server = viper.GetString("server")
 	// Add template descriptors specified by command line
 	cmdTemplates, err := cmd.Flags().GetStringSlice("template")
 	if err != nil {
@@ -137,6 +144,6 @@ func (cfg *Config) appendTemplateDescriptor(d *TemplateDescriptor) {
 		cfg.templatePaths[d.Path] = true
 		cfg.TemplateDescriptors = append(cfg.TemplateDescriptors, d)
 	} else {
-		log.Printf("skipped duplicated template: %s", d.Path)
+		log.Printf("template already added: %s", d.Path)
 	}
 }

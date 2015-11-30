@@ -28,11 +28,14 @@ type App struct {
 	// Application config
 	config *Config
 
+	// Kubernetes client
+	client *Client
+
 	// Templates to process
 	templates []*Template
 }
 
-func newApp(cfg *Config) *App {
+func newApp(cfg *Config) (*App, error) {
 	app := &App{
 		config: cfg,
 	}
@@ -46,7 +49,14 @@ func newApp(cfg *Config) *App {
 		app.templates = append(app.templates, newTemplate(d))
 	}
 
-	return app
+	// Create Kubernetes client
+	c, err := newClient(cfg)
+	if err != nil {
+		return nil, err
+	}
+	app.client = c
+
+	return app, nil
 }
 
 func (app *App) Start() {
@@ -62,7 +72,7 @@ MainLoop:
 		case <-app.stopCh:
 			close(app.doneCh)
 			break MainLoop
-		case <-time.After(3 * time.Second):
+		case <-time.After(5 * time.Second):
 			app.Run()
 		}
 	}
@@ -71,10 +81,10 @@ MainLoop:
 func (app *App) Run() {
 	for _, t := range app.templates {
 		log.Printf("render: %s", t.name)
-		if rendered, err := t.Render(); err == nil {
+		if rendered, err := t.Render(app.client); err == nil {
 			log.Printf("rendered %s:\n %s", t.name, rendered)
 		} else {
-			log.Printf("can't render template: %v", err)
+			log.Printf("can't render %v", err)
 		}
 	}
 }

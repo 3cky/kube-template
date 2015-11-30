@@ -36,7 +36,7 @@ func newCmd() *cobra.Command {
 }
 
 func initCmd(cmd *cobra.Command) {
-	cobra.OnInitialize(initConfigFile)
+	cmd.Flags().StringP("server", "s", "", "The address and port of the Kubernetes API server")
 	cmd.Flags().StringVarP(&cfgFile, "config", "c", "", "config file (default is ./kube-template.yaml)")
 	cmd.Flags().StringSliceP("template", "t", nil, `Adds a new template to watch on disk in the format
 		'templatePath:outputPath[:command]'. This option is additive
@@ -54,7 +54,10 @@ func runCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// Start application
-	app := newApp(config)
+	app, err := newApp(config)
+	if err != nil {
+		log.Fatalf("can't create application: %v", err)
+	}
 
 	go app.Start()
 

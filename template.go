@@ -16,10 +16,12 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"text/template"
+
+	"fmt"
+	"k8s.io/kubernetes/pkg/api"
 )
 
 type Template struct {
@@ -34,7 +36,7 @@ func newTemplate(d *TemplateDescriptor) *Template {
 	}
 }
 
-func (t *Template) Render() (string, error) {
+func (t *Template) Render(c *Client) (string, error) {
 	// Read template data
 	data, err := ioutil.ReadFile(t.desc.Path)
 	if err != nil {
@@ -42,15 +44,45 @@ func (t *Template) Render() (string, error) {
 	}
 	s := string(data)
 	// Create template from read data
-	template, err := template.New(t.name).Parse(s)
+	template, err := template.New(t.name).Funcs(funcMap(c)).Parse(s)
 	if err != nil {
-		return "", fmt.Errorf("%s: %v", t.name, err)
+		return "", err
 	}
 	// Render template to buffer
 	buf := new(bytes.Buffer)
 	if err := template.Execute(buf, nil); err != nil {
-		return "", fmt.Errorf("%s: %v", t.name, err)
+		return "", err
 	}
 
 	return buf.String(), nil
+}
+
+func funcMap(c *Client) template.FuncMap {
+	return template.FuncMap{
+		"pods": pods(c),
+	}
+}
+
+// {{pods "namespace" "selector"}}
+func pods(c *Client) func(...string) ([]api.Pod, error) {
+	return func(s ...string) ([]api.Pod, error) {
+		namespace := ""
+		selector := ""
+		switch len(s) {
+		case 0:
+			break
+		case 1:
+			namespace = s[0]
+		case 2:
+			namespace = s[0]
+			selector = s[1]
+		default:
+			return nil, fmt.Errorf("expected max 2 arguments, got %d", len(s))
+		}
+		p, err := c.Pods(namespace, selector)
+		if err != nil {
+			return nil, err
+		}
+		return p, nil
+	}
 }
