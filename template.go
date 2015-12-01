@@ -58,7 +58,9 @@ func (t *Template) Process(c *Client) (bool, error) {
 	if r, err := t.Render(c); err == nil {
 		if changed := !(r == t.lastOutput); changed {
 			// Template output changed, write to output file
-			if err := ioutil.WriteFile(t.desc.Output, []byte(r), 0644); err != nil { // FIXME file mode from config
+			// TODO file mode from config
+			// TODO atomic write
+			if err := ioutil.WriteFile(t.desc.Output, []byte(r), 0644); err != nil {
 				return false, err
 			}
 			t.lastOutput = r
@@ -103,8 +105,7 @@ func funcMap(c *Client) template.FuncMap {
 // {{pods "namespace" "selector"}}
 func pods(c *Client) func(...string) ([]api.Pod, error) {
 	return func(s ...string) ([]api.Pod, error) {
-		namespace := DEFAULT_NAMESPACE
-		selector := DEFAULT_SELECTOR
+		namespace, selector := DEFAULT_NAMESPACE, DEFAULT_SELECTOR
 		switch len(s) {
 		case 0:
 			break
@@ -127,8 +128,7 @@ func pods(c *Client) func(...string) ([]api.Pod, error) {
 // {{services "namespace" "selector"}}
 func services(c *Client) func(...string) ([]api.Service, error) {
 	return func(s ...string) ([]api.Service, error) {
-		namespace := DEFAULT_NAMESPACE
-		selector := DEFAULT_SELECTOR
+		namespace, selector := DEFAULT_NAMESPACE, DEFAULT_SELECTOR
 		switch len(s) {
 		case 0:
 			break

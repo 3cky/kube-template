@@ -79,16 +79,41 @@ MainLoop:
 }
 
 func (app *App) Run() {
+	// Commands to execute are stored in list instead of map to ensure correct execution order
+	var commands []string
+	// Process templates
 	for _, t := range app.templates {
 		log.Printf("process template: %s", t.name)
 		if updated, err := t.Process(app.client); err == nil {
 			if updated {
 				log.Printf("template output changed: %s\n %s", t.name, t.lastOutput)
+				if cmd := t.desc.Command; len(cmd) > 0 {
+					// Check template command is already in list of commands to execute
+					if c, err := NormPath(cmd); err == nil {
+						if !IsPresent(commands, c) {
+							log.Printf("template %s: scheduled command: %q", t.name, c)
+							commands = append(commands, c)
+						} else {
+							log.Printf("template %s: command already scheduled: %q", t.name, c)
+						}
+					} else {
+						log.Printf("template %s: can't schedule command: %v", t.name, err)
+					}
+				}
 			} else {
 				log.Printf("template output not changed: %s", t.name)
 			}
 		} else {
 			log.Printf("can't render %v", err)
+		}
+	}
+	// Execute commands for templates
+	for _, cmd := range commands {
+		log.Printf("executing: %q", cmd)
+		if err := Execute(cmd, time.Second); err == nil {
+			log.Printf("executed: %q", cmd)
+		} else {
+			log.Printf("command %q: %v", cmd, err)
 		}
 	}
 }
