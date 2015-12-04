@@ -33,6 +33,10 @@ const (
 var cfgFile string
 
 type Config struct {
+	// Do not write template output
+	DryRun bool
+	// Run template processing once and exit
+	RunOnce bool
 	// Kubernetes API server address
 	Server string
 	// Kubernetes API server poll time
@@ -100,8 +104,20 @@ func parseTemplateDescriptor(s string) (*TemplateDescriptor, error) {
 func newConfig(cmd *cobra.Command) (*Config, error) {
 	// Create empty config
 	config := new(Config)
+	// Get command-line only options
+	dryRun, err := cmd.Flags().GetBool(FLAG_DRY_RUN)
+	if err != nil {
+		return nil, err
+	}
+	config.DryRun = dryRun
+	runOnce, err := cmd.Flags().GetBool(FLAG_RUN_ONCE)
+	if err != nil {
+		return nil, err
+	}
+	config.RunOnce = runOnce
 	// Read config from file, if present
 	readConfig(cmd)
+	// Get command line / config options
 	config.Server = viper.GetString(CFG_SERVER)
 	config.PollTime = viper.GetDuration(CFG_POLL_TIME)
 	// Add template descriptors specified by command line

@@ -64,7 +64,14 @@ func (app *App) Start() {
 
 	defer log.Println("application stopped")
 
+	// Initial templates processing run
 	app.Run()
+
+	if app.config.RunOnce {
+		log.Println("run once requested, exiting...")
+		close(app.doneCh)
+		return
+	}
 
 MainLoop:
 	for {
@@ -84,9 +91,13 @@ func (app *App) Run() {
 	// Process templates
 	for _, t := range app.templates {
 		log.Printf("process template: %s", t.name)
-		if updated, err := t.Process(app.client); err == nil {
+		if updated, err := t.Process(app.client, app.config.DryRun); err == nil {
 			if updated {
-				log.Printf("template output changed: %s\n %s", t.name, t.lastOutput)
+				if !app.config.DryRun {
+					log.Printf("template output updated: %s", t.name)
+				} else {
+					log.Printf("(dry-run) %s:\n%s", t.name, t.lastOutput)
+				}
 				if cmd := t.desc.Command; len(cmd) > 0 {
 					// Check template command is already in list of commands to execute
 					if c, err := NormPath(cmd); err == nil {
@@ -109,11 +120,15 @@ func (app *App) Run() {
 	}
 	// Execute commands for templates
 	for _, cmd := range commands {
-		log.Printf("executing: %q", cmd)
-		if err := Execute(cmd, time.Second); err == nil {
-			log.Printf("executed: %q", cmd)
+		if !app.config.DryRun {
+			log.Printf("executing: %q", cmd)
+			if err := Execute(cmd, time.Second); err == nil {
+				log.Printf("executed: %q", cmd)
+			} else {
+				log.Printf("command %q: %v", cmd, err)
+			}
 		} else {
-			log.Printf("command %q: %v", cmd, err)
+			log.Printf("(dry-run) executing: %q", cmd)
 		}
 	}
 }

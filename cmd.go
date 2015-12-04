@@ -26,6 +26,8 @@ import (
 )
 
 const (
+	FLAG_RUN_ONCE  = "once"
+	FLAG_DRY_RUN   = "dry-run"
 	FLAG_SERVER    = "server"
 	FLAG_CONFIG    = "config"
 	FLAG_POLL_TIME = "poll-time"
@@ -45,6 +47,8 @@ func newCmd() *cobra.Command {
 }
 
 func initCmd(cmd *cobra.Command) {
+	cmd.Flags().Bool(FLAG_DRY_RUN, false, "Don't write template output, dump result to stdout")
+	cmd.Flags().Bool(FLAG_RUN_ONCE, false, "Run template processing once and exit")
 	cmd.Flags().StringP(FLAG_SERVER, "s", "", "The address and port of the Kubernetes API server")
 	cmd.Flags().DurationP(FLAG_POLL_TIME, "p", 15*time.Second, "Kubernetes API server poll time")
 	cmd.Flags().StringVarP(&cfgFile, FLAG_CONFIG, "c", "", fmt.Sprintf("config file (default is ./%s.(yaml|json))", CFG_FILE))
@@ -60,7 +64,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 		log.Fatalf("configuration error: %v", err)
 	}
 	if len(config.TemplateDescriptors) == 0 {
-		log.Fatalf("no templates to process found, exiting...")
+		log.Fatalf("no templates to process (use --help to get configuration options), exiting...")
 	}
 
 	// Start application

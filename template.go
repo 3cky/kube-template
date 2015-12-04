@@ -54,14 +54,16 @@ func newTemplate(d *TemplateDescriptor) *Template {
 	}
 }
 
-func (t *Template) Process(c *Client) (bool, error) {
+func (t *Template) Process(c *Client, dryRun bool) (bool, error) {
 	if r, err := t.Render(c); err == nil {
 		if changed := !(r == t.lastOutput); changed {
-			// Template output changed, write to output file
-			// TODO file mode from config
-			// TODO atomic write
-			if err := ioutil.WriteFile(t.desc.Output, []byte(r), 0644); err != nil {
-				return false, err
+			// Template output changed
+			if !dryRun {
+				// TODO file mode from config
+				// TODO atomic write
+				if err := ioutil.WriteFile(t.desc.Output, []byte(r), 0644); err != nil {
+					return false, err
+				}
 			}
 			t.lastOutput = r
 			return true, nil
