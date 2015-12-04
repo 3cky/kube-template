@@ -21,12 +21,22 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"strings"
+	"time"
+)
+
+const (
+	CFG_FILE      = "kube-template"
+	CFG_SERVER    = FLAG_SERVER
+	CFG_POLL_TIME = FLAG_POLL_TIME
 )
 
 var cfgFile string
 
 type Config struct {
+	// Kubernetes API server address
 	Server string
+	// Kubernetes API server poll time
+	PollTime time.Duration
 
 	// Template paths
 	templatePaths map[string]bool
@@ -49,11 +59,12 @@ func readConfig(cmd *cobra.Command) {
 		viper.SetConfigFile(cfgFile)
 	}
 
-	viper.SetConfigName("kube-template") // name of config file (without extension)
-	viper.AddConfigPath(".")             // adding home directory as first search path
-	viper.AutomaticEnv()                 // read in environment variables that match
+	viper.SetConfigName(CFG_FILE) // name of config file (without extension)
+	viper.AddConfigPath(".")      // adding home directory as first search path
+	viper.AutomaticEnv()          // read in environment variables that match
 
-	viper.BindPFlag("server", cmd.Flags().Lookup("server"))
+	viper.BindPFlag(CFG_SERVER, cmd.Flags().Lookup(FLAG_SERVER))
+	viper.BindPFlag(CFG_POLL_TIME, cmd.Flags().Lookup(FLAG_POLL_TIME))
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
@@ -91,9 +102,10 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 	config := new(Config)
 	// Read config from file, if present
 	readConfig(cmd)
-	config.Server = viper.GetString("server")
+	config.Server = viper.GetString(CFG_SERVER)
+	config.PollTime = viper.GetDuration(CFG_POLL_TIME)
 	// Add template descriptors specified by command line
-	cmdTemplates, err := cmd.Flags().GetStringSlice("template")
+	cmdTemplates, err := cmd.Flags().GetStringSlice(FLAG_TEMPLATE)
 	if err != nil {
 		return nil, err
 	}

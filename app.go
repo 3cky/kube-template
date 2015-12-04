@@ -72,7 +72,7 @@ MainLoop:
 		case <-app.stopCh:
 			close(app.doneCh)
 			break MainLoop
-		case <-time.After(5 * time.Second):
+		case <-time.After(app.config.PollTime):
 			app.Run()
 		}
 	}

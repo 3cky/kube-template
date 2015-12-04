@@ -20,6 +20,10 @@ import (
 	"k8s.io/kubernetes/pkg/labels"
 )
 
+const (
+	DEFAULT_HOST = "http://localhost:8080"
+)
+
 type ClientInterface interface {
 	Pods(namespace string, selector string) ([]api.Pod, error)
 }
@@ -29,8 +33,13 @@ type Client struct {
 }
 
 func newClient(cfg *Config) (*Client, error) {
+	host := DEFAULT_HOST
+	if cfg.Server != "" {
+		host = cfg.Server
+	}
+
 	config := kubeClient.Config{
-		Host: cfg.Server,
+		Host: host,
 	}
 
 	c, err := kubeClient.New(&config)

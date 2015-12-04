@@ -17,10 +17,19 @@ package main
 import (
 	"log"
 
+	"fmt"
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
+)
+
+const (
+	FLAG_SERVER    = "server"
+	FLAG_CONFIG    = "config"
+	FLAG_POLL_TIME = "poll-time"
+	FLAG_TEMPLATE  = "template"
 )
 
 func newCmd() *cobra.Command {
@@ -36,9 +45,10 @@ func newCmd() *cobra.Command {
 }
 
 func initCmd(cmd *cobra.Command) {
-	cmd.Flags().StringP("server", "s", "", "The address and port of the Kubernetes API server")
-	cmd.Flags().StringVarP(&cfgFile, "config", "c", "", "config file (default is ./kube-template.yaml)")
-	cmd.Flags().StringSliceP("template", "t", nil, `Adds a new template to watch on disk in the format
+	cmd.Flags().StringP(FLAG_SERVER, "s", "", "The address and port of the Kubernetes API server")
+	cmd.Flags().DurationP(FLAG_POLL_TIME, "p", 15*time.Second, "Kubernetes API server poll time")
+	cmd.Flags().StringVarP(&cfgFile, FLAG_CONFIG, "c", "", fmt.Sprintf("config file (default is ./%s.(yaml|json))", CFG_FILE))
+	cmd.Flags().StringSliceP(FLAG_TEMPLATE, "t", nil, `Adds a new template to watch on disk in the format
 		'templatePath:outputPath[:command]'. This option is additive
 		and may be specified multiple times for multiple templates.`)
 }
