@@ -16,6 +16,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"time"
 )
 
@@ -99,16 +100,18 @@ func (app *App) Run() {
 					log.Printf("(dry-run) %s:\n%s", t.name, t.lastOutput)
 				}
 				if cmd := t.desc.Command; len(cmd) > 0 {
-					// Check template command is already in list of commands to execute
-					if c, err := NormPath(cmd); err == nil {
-						if !IsPresent(commands, c) {
-							log.Printf("template %s: scheduled command: %q", t.name, c)
-							commands = append(commands, c)
-						} else {
-							log.Printf("template %s: command already scheduled: %q", t.name, c)
+					// Normalize command path, if applicable
+					if _, err := os.Stat(cmd); err == nil {
+						if c, err := NormPath(cmd); err == nil {
+							cmd = c
 						}
+					}
+					// Check template command is already in list of commands to execute
+					if !IsPresent(commands, cmd) {
+						log.Printf("template %s: scheduled command: %q", t.name, cmd)
+						commands = append(commands, cmd)
 					} else {
-						log.Printf("template %s: can't schedule command: %v", t.name, err)
+						log.Printf("template %s: command already scheduled: %q", t.name, cmd)
 					}
 				}
 			} else {
