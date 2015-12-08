@@ -99,8 +99,12 @@ func (t *Template) Render(c *Client) (string, error) {
 
 func funcMap(c *Client) template.FuncMap {
 	return template.FuncMap{
+		// Kubernetes objects
 		"pods":     pods(c),
 		"services": services(c),
+		// Utils
+		"add": add,
+		"sub": sub,
 	}
 }
 
@@ -148,4 +152,14 @@ func services(c *Client) func(...string) ([]api.Service, error) {
 		}
 		return services, nil
 	}
+}
+
+// {{add a b}}
+func add(a, b int) int {
+	return a + b
+}
+
+// {{sub a b}}
+func sub(a, b int) int {
+	return a - b
 }
