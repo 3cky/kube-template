@@ -54,8 +54,8 @@ func newTemplate(d *TemplateDescriptor) *Template {
 	}
 }
 
-func (t *Template) Process(c *Client, dryRun bool) (bool, error) {
-	if r, err := t.Render(c); err == nil {
+func (t *Template) Process(dm *DependencyManager, dryRun bool) (bool, error) {
+	if r, err := t.Render(dm); err == nil {
 		if changed := !(r == t.lastOutput); changed {
 			// Template output changed
 			if !dryRun {
@@ -76,7 +76,7 @@ func (t *Template) Process(c *Client, dryRun bool) (bool, error) {
 	}
 }
 
-func (t *Template) Render(c *Client) (string, error) {
+func (t *Template) Render(dm *DependencyManager) (string, error) {
 	// Read template data
 	data, err := ioutil.ReadFile(t.desc.Path)
 	if err != nil {
@@ -84,7 +84,7 @@ func (t *Template) Render(c *Client) (string, error) {
 	}
 	s := string(data)
 	// Create template from read data
-	template, err := template.New(t.name).Funcs(funcMap(c)).Parse(s)
+	template, err := template.New(t.name).Funcs(funcMap(dm)).Parse(s)
 	if err != nil {
 		return "", err
 	}
@@ -97,11 +97,11 @@ func (t *Template) Render(c *Client) (string, error) {
 	return buf.String(), nil
 }
 
-func funcMap(c *Client) template.FuncMap {
+func funcMap(dm *DependencyManager) template.FuncMap {
 	return template.FuncMap{
 		// Kubernetes objects
-		"pods":     pods(c),
-		"services": services(c),
+		"pods":     pods(dm),
+		"services": services(dm),
 		// Utils
 		"add": add,
 		"sub": sub,
@@ -109,7 +109,7 @@ func funcMap(c *Client) template.FuncMap {
 }
 
 // {{pods "selector" "namespace"}}
-func pods(c *Client) func(...string) ([]api.Pod, error) {
+func pods(dm *DependencyManager) func(...string) ([]api.Pod, error) {
 	return func(s ...string) ([]api.Pod, error) {
 		namespace, selector := DEFAULT_NAMESPACE, DEFAULT_SELECTOR
 		switch len(s) {
@@ -123,7 +123,7 @@ func pods(c *Client) func(...string) ([]api.Pod, error) {
 		default:
 			return nil, fmt.Errorf("expected max 2 arguments, got %d", len(s))
 		}
-		pods, err := c.Pods(namespace, selector)
+		pods, err := dm.Pods(namespace, selector)
 		if err != nil {
 			return nil, err
 		}
@@ -132,7 +132,7 @@ func pods(c *Client) func(...string) ([]api.Pod, error) {
 }
 
 // {{services "selector" "namespace"}}
-func services(c *Client) func(...string) ([]api.Service, error) {
+func services(dm *DependencyManager) func(...string) ([]api.Service, error) {
 	return func(s ...string) ([]api.Service, error) {
 		namespace, selector := DEFAULT_NAMESPACE, DEFAULT_SELECTOR
 		switch len(s) {
@@ -146,7 +146,7 @@ func services(c *Client) func(...string) ([]api.Service, error) {
 		default:
 			return nil, fmt.Errorf("expected max 2 arguments, got %d", len(s))
 		}
-		services, err := c.Services(namespace, selector)
+		services, err := dm.Services(namespace, selector)
 		if err != nil {
 			return nil, err
 		}

@@ -15,6 +15,8 @@
 package main
 
 import (
+	"log"
+
 	"k8s.io/kubernetes/pkg/api"
 	kubeClient "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/labels"
@@ -52,7 +54,8 @@ func newClient(cfg *Config) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) Pods(namespace string, selector string) ([]api.Pod, error) {
+func (c *Client) Pods(namespace, selector string) ([]api.Pod, error) {
+	log.Printf("fetching pods, namespace: %q, selector: %q", namespace, selector)
 	s, err := labels.Parse(selector)
 	if err != nil {
 		return nil, err
@@ -64,7 +67,8 @@ func (c *Client) Pods(namespace string, selector string) ([]api.Pod, error) {
 	return podList.Items, nil
 }
 
-func (c *Client) Services(namespace string, selector string) ([]api.Service, error) {
+func (c *Client) Services(namespace, selector string) ([]api.Service, error) {
+	log.Printf("fetching services, namespace: %q, selector: %q", namespace, selector)
 	s, err := labels.Parse(selector)
 	if err != nil {
 		return nil, err

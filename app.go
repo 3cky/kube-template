@@ -87,12 +87,14 @@ MainLoop:
 }
 
 func (app *App) Run() {
+	// Create dependency manager
+	dm := newDependencyManager(app.client)
 	// Commands to execute are stored in list instead of map to ensure correct execution order
 	var commands []string
 	// Process templates
 	for _, t := range app.templates {
 		log.Printf("process template: %s", t.name)
-		if updated, err := t.Process(app.client, app.config.DryRun); err == nil {
+		if updated, err := t.Process(dm, app.config.DryRun); err == nil {
 			if updated {
 				if !app.config.DryRun {
 					log.Printf("template output updated: %s", t.name)
