@@ -104,7 +104,7 @@ func funcMap(c *Client) template.FuncMap {
 	}
 }
 
-// {{pods "namespace" "selector"}}
+// {{pods "selector" "namespace"}}
 func pods(c *Client) func(...string) ([]api.Pod, error) {
 	return func(s ...string) ([]api.Pod, error) {
 		namespace, selector := DEFAULT_NAMESPACE, DEFAULT_SELECTOR
@@ -112,10 +112,10 @@ func pods(c *Client) func(...string) ([]api.Pod, error) {
 		case 0:
 			break
 		case 1:
-			namespace = s[0]
+			selector = s[0]
 		case 2:
-			namespace = s[0]
-			selector = s[1]
+			selector = s[0]
+			namespace = s[1]
 		default:
 			return nil, fmt.Errorf("expected max 2 arguments, got %d", len(s))
 		}
@@ -127,7 +127,7 @@ func pods(c *Client) func(...string) ([]api.Pod, error) {
 	}
 }
 
-// {{services "namespace" "selector"}}
+// {{services "selector" "namespace"}}
 func services(c *Client) func(...string) ([]api.Service, error) {
 	return func(s ...string) ([]api.Service, error) {
 		namespace, selector := DEFAULT_NAMESPACE, DEFAULT_SELECTOR
@@ -135,17 +135,17 @@ func services(c *Client) func(...string) ([]api.Service, error) {
 		case 0:
 			break
 		case 1:
-			namespace = s[0]
+			selector = s[0]
 		case 2:
-			namespace = s[0]
-			selector = s[1]
+			selector = s[0]
+			namespace = s[1]
 		default:
 			return nil, fmt.Errorf("expected max 2 arguments, got %d", len(s))
 		}
-		svcs, err := c.Services(namespace, selector)
+		services, err := c.Services(namespace, selector)
 		if err != nil {
 			return nil, err
 		}
-		return svcs, nil
+		return services, nil
 	}
 }
