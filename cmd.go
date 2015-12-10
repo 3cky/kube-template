@@ -15,62 +15,72 @@
 package main
 
 import (
-	"log"
-
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
+
+	"github.com/golang/glog"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+
+	"k8s.io/kubernetes/pkg/util"
 )
 
 const (
-	FLAG_RUN_ONCE  = "once"
-	FLAG_DRY_RUN   = "dry-run"
-	FLAG_SERVER    = "server"
-	FLAG_CONFIG    = "config"
-	FLAG_POLL_TIME = "poll-time"
-	FLAG_TEMPLATE  = "template"
+	FLAG_V             = "v"
+	FLAG_STDERR_THRESH = "stderrthreshold"
+	FLAG_RUN_ONCE      = "once"
+	FLAG_DRY_RUN       = "dry-run"
+	FLAG_SERVER        = "server"
+	FLAG_CONFIG        = "config"
+	FLAG_POLL_TIME     = "poll-time"
+	FLAG_TEMPLATE      = "template"
 )
 
 func newCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "kube-template",
 		Short: "kube-template",
-		Long: `Watches a series of templates on the file system, writing new changes when
-  Kubernetes is updated.`,
-		Run: runCmd,
+		Long:  "Watches Kubernetes for updates, writing output of a series of templates to files.",
+		Run:   runCmd,
 	}
 	initCmd(cmd)
 	return cmd
 }
 
 func initCmd(cmd *cobra.Command) {
-	cmd.Flags().Bool(FLAG_DRY_RUN, false, "Don't write template output, dump result to stdout")
-	cmd.Flags().Bool(FLAG_RUN_ONCE, false, "Run template processing once and exit")
-	cmd.Flags().StringP(FLAG_SERVER, "s", "", "The address and port of the Kubernetes API server")
-	cmd.Flags().DurationP(FLAG_POLL_TIME, "p", 15*time.Second, "Kubernetes API server poll time")
-	cmd.Flags().StringVarP(&cfgFile, FLAG_CONFIG, "c", "", fmt.Sprintf("config file (default is ./%s.(yaml|json))", CFG_FILE))
-	cmd.Flags().StringSliceP(FLAG_TEMPLATE, "t", nil, `Adds a new template to watch on disk in the format
+	// Command-related flags set
+	f := cmd.Flags()
+	f.Bool(FLAG_DRY_RUN, false, "don't write template output, dump result to stdout")
+	f.Bool(FLAG_RUN_ONCE, false, "run template processing once and exit")
+	f.StringP(FLAG_SERVER, "s", "", "the address and port of the Kubernetes API server")
+	f.StringVarP(&cfgFile, FLAG_CONFIG, "c", "", fmt.Sprintf("config file (default is ./%s.(yaml|json))", CFG_FILE))
+	f.StringSliceP(FLAG_TEMPLATE, "t", nil, `adds a new template to watch on disk in the format
 		'templatePath:outputPath[:command]'. This option is additive
 		and may be specified multiple times for multiple templates.`)
+	// Merge glog-related flags
+	// FIXME probably we shouldn't use k8s utils there
+	pflag.CommandLine.AddFlagSet(f)
+	util.InitFlags()
+	util.InitLogs()
+	defer util.FlushLogs()
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
 	config, err := newConfig(cmd)
 
 	if err != nil {
-		log.Fatalf("configuration error: %v", err)
+		glog.Fatalf("configuration error: %v", err)
 	}
 	if len(config.TemplateDescriptors) == 0 {
-		log.Fatalf("no templates to process (use --help to get configuration options), exiting...")
+		glog.Fatalf("no templates to process (use --help to get configuration options), exiting...")
 	}
 
 	// Start application
 	app, err := newApp(config)
 	if err != nil {
-		log.Fatalf("can't create application: %v", err)
+		glog.Fatalf("can't create application: %v", err)
 	}
 
 	go app.Start()
@@ -89,7 +99,7 @@ EventLoop:
 	for {
 		select {
 		case signal := <-signalCh:
-			log.Printf("received %v signal, stopping", signal)
+			glog.V(2).Infof("received %v signal, stopping", signal)
 			app.Stop()
 		case <-app.doneCh:
 			break EventLoop

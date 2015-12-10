@@ -15,8 +15,7 @@
 package main
 
 import (
-	"log"
-
+	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/api"
 	kubeClient "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/labels"
@@ -55,7 +54,7 @@ func newClient(cfg *Config) (*Client, error) {
 }
 
 func (c *Client) Pods(namespace, selector string) ([]api.Pod, error) {
-	log.Printf("fetching pods, namespace: %q, selector: %q", namespace, selector)
+	glog.V(4).Infof("fetching pods, namespace: %q, selector: %q", namespace, selector)
 	s, err := labels.Parse(selector)
 	if err != nil {
 		return nil, err
@@ -68,7 +67,7 @@ func (c *Client) Pods(namespace, selector string) ([]api.Pod, error) {
 }
 
 func (c *Client) Services(namespace, selector string) ([]api.Service, error) {
-	log.Printf("fetching services, namespace: %q, selector: %q", namespace, selector)
+	glog.V(4).Infof("fetching services, namespace: %q, selector: %q", namespace, selector)
 	s, err := labels.Parse(selector)
 	if err != nil {
 		return nil, err

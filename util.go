@@ -17,11 +17,12 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 // Normalize given path: evaluate symlinks, convert to absolute and clean
@@ -84,19 +85,19 @@ func Execute(command string, timeout time.Duration) error {
 	outScanner := bufio.NewScanner(stdout)
 	go func() {
 		for outScanner.Scan() {
-			log.Printf("STDOUT: %s", outScanner.Text())
+			glog.V(4).Infof("STDOUT: %s", outScanner.Text())
 		}
 		if err := outScanner.Err(); err != nil {
-			log.Printf("STDOUT: error: %v", err)
+			glog.Errorf("STDOUT: error: %v", err)
 		}
 	}()
 	errScanner := bufio.NewScanner(stderr)
 	go func() {
 		for errScanner.Scan() {
-			log.Printf("STDERR: %s", errScanner.Text())
+			glog.V(4).Infof("STDERR: %s", errScanner.Text())
 		}
 		if err := errScanner.Err(); err != nil {
-			log.Printf("STDERR: error: %v", err)
+			glog.Errorf("STDERR: error: %v", err)
 		}
 	}()
 
@@ -105,12 +106,12 @@ func Execute(command string, timeout time.Duration) error {
 	case <-time.After(timeout):
 		if cmd.Process != nil {
 			if err := cmd.Process.Kill(); err != nil {
-				log.Printf("timeout: %q, not killed: %v", command, err)
+				glog.Errorf("timeout: %q, not killed: %v", command, err)
 			} else {
-				log.Printf("timeout: %q, killed", command)
+				glog.Warningf("timeout: %q, killed", command)
 			}
 		} else {
-			log.Printf("timeout: %q, nothing to kill", command)
+			glog.Warningf("timeout: %q, nothing to kill", command)
 		}
 		return fmt.Errorf("timeout: %q", command)
 	case err := <-result:

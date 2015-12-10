@@ -15,13 +15,13 @@
 package main
 
 import (
-	"log"
-
 	"errors"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"strings"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -72,7 +72,7 @@ func readConfig(cmd *cobra.Command) {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		log.Printf("using config file: %s", viper.ConfigFileUsed())
+		glog.V(1).Infof("using config file: %s", viper.ConfigFileUsed())
 	}
 }
 
@@ -130,9 +130,9 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 	for _, template := range cmdTemplates {
 		d, err := parseTemplateDescriptor(template)
 		if err != nil {
-			log.Printf("can't parse '%s': %v", template, err)
+			glog.Errorf("can't parse '%s': %v", template, err)
 		} else {
-			log.Printf("adding template from command line: %s", d.Path)
+			glog.V(2).Infof("adding template from command line: %s", d.Path)
 			config.appendTemplateDescriptor(d)
 		}
 	}
@@ -144,7 +144,7 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 			iPath, pathPresent := cfgTemplate["path"]
 			iOutput, outputPresent := cfgTemplate["output"]
 			if !pathPresent || !outputPresent {
-				log.Printf("skipped non-complete template descriptor: %#v", cfgTemplate)
+				glog.Warningf("skipped non-complete template descriptor: %#v", cfgTemplate)
 				continue
 			}
 			path, output := iPath.(string), iOutput.(string)
@@ -159,7 +159,7 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 				Output:  output,
 				Command: cmd,
 			}
-			log.Printf("adding template from config file: %s", d.Path)
+			glog.V(2).Infof("adding template from config file: %s", d.Path)
 			config.appendTemplateDescriptor(d)
 		}
 	}
@@ -172,6 +172,6 @@ func (cfg *Config) appendTemplateDescriptor(d *TemplateDescriptor) {
 		cfg.templatePaths[d.Path] = true
 		cfg.TemplateDescriptors = append(cfg.TemplateDescriptors, d)
 	} else {
-		log.Printf("template already added: %s", d.Path)
+		glog.Warningf("template already added: %s", d.Path)
 	}
 }

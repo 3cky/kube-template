@@ -15,9 +15,11 @@
 package main
 
 import (
-	"log"
 	"os"
 	"time"
+
+	"fmt"
+	"github.com/golang/glog"
 )
 
 type App struct {
@@ -61,15 +63,15 @@ func newApp(cfg *Config) (*App, error) {
 }
 
 func (app *App) Start() {
-	log.Println("starting application...")
+	glog.V(1).Infoln("starting application...")
 
-	defer log.Println("application stopped")
+	defer glog.V(1).Infoln("application stopped")
 
 	// Initial templates processing run
 	app.Run()
 
 	if app.config.RunOnce {
-		log.Println("run once requested, exiting...")
+		glog.V(1).Infoln("run once requested, exiting...")
 		close(app.doneCh)
 		return
 	}
@@ -93,13 +95,13 @@ func (app *App) Run() {
 	var commands []string
 	// Process templates
 	for _, t := range app.templates {
-		log.Printf("process template: %s", t.name)
+		glog.V(2).Infof("process template: %s", t.name)
 		if updated, err := t.Process(dm, app.config.DryRun); err == nil {
 			if updated {
 				if !app.config.DryRun {
-					log.Printf("template output updated: %s", t.name)
+					glog.V(2).Infof("template output updated: %s", t.name)
 				} else {
-					log.Printf("(dry-run) %s:\n%s", t.name, t.lastOutput)
+					fmt.Printf("(dry-run) %s:\n%s", t.name, t.lastOutput)
 				}
 				if cmd := t.desc.Command; len(cmd) > 0 {
 					// Normalize command path, if applicable
@@ -110,35 +112,35 @@ func (app *App) Run() {
 					}
 					// Check template command is already in list of commands to execute
 					if !IsPresent(commands, cmd) {
-						log.Printf("template %s: scheduled command: %q", t.name, cmd)
+						glog.V(4).Infof("template %s: scheduled command: %q", t.name, cmd)
 						commands = append(commands, cmd)
 					} else {
-						log.Printf("template %s: command already scheduled: %q", t.name, cmd)
+						glog.V(4).Infof("template %s: command already scheduled: %q", t.name, cmd)
 					}
 				}
 			} else {
-				log.Printf("template output not changed: %s", t.name)
+				glog.V(2).Infof("template output not changed: %s", t.name)
 			}
 		} else {
-			log.Printf("can't render %v", err)
+			glog.Errorf("can't render %v", err)
 		}
 	}
 	// Execute commands for templates
 	for _, cmd := range commands {
 		if !app.config.DryRun {
-			log.Printf("executing: %q", cmd)
+			glog.V(4).Infof("executing: %q", cmd)
 			if err := Execute(cmd, time.Second); err == nil {
-				log.Printf("executed: %q", cmd)
+				glog.V(4).Infof("executed: %q", cmd)
 			} else {
-				log.Printf("command %q: %v", cmd, err)
+				glog.Errorf("command %q: %v", cmd, err)
 			}
 		} else {
-			log.Printf("(dry-run) executing: %q", cmd)
+			fmt.Printf("(dry-run) executing: %q", cmd)
 		}
 	}
 }
 
 func (app *App) Stop() {
-	log.Println("stopping application...")
+	glog.V(1).Infoln("stopping application...")
 	close(app.stopCh)
 }
