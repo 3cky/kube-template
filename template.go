@@ -100,57 +100,124 @@ func (t *Template) Render(dm *DependencyManager) (string, error) {
 func funcMap(dm *DependencyManager) template.FuncMap {
 	return template.FuncMap{
 		// Kubernetes objects
-		"pods":     pods(dm),
-		"services": services(dm),
+		"pods":                   pods(dm),
+		"services":               services(dm),
+		"replicationcontrollers": replicationcontrollers(dm),
+		"events":                 events(dm),
+		"endpoints":              endpoints(dm),
+		"nodes":                  nodes(dm),
+		"namespaces":             namespaces(dm),
 		// Utils
 		"add": add,
 		"sub": sub,
 	}
 }
 
+// Parse template tag with max 1 argument - selector
+func parseSelector(s ...string) (string, error) {
+	selector := DEFAULT_SELECTOR
+	switch len(s) {
+	case 0:
+		break
+	case 1:
+		selector = s[0]
+	default:
+		return "", fmt.Errorf("expected max 1 argument, got %d", len(s))
+	}
+	return selector, nil
+}
+
+// Parse template tag with max 2 arguments - selector and namespace (in given order)
+func parseNamespaceSelector(s ...string) (string, string, error) {
+	namespace, selector := DEFAULT_NAMESPACE, DEFAULT_SELECTOR
+	switch len(s) {
+	case 0:
+		break
+	case 1:
+		selector = s[0]
+	case 2:
+		selector = s[0]
+		namespace = s[1]
+	default:
+		return "", "", fmt.Errorf("expected max 2 arguments, got %d", len(s))
+	}
+	return namespace, selector, nil
+}
+
 // {{pods "selector" "namespace"}}
 func pods(dm *DependencyManager) func(...string) ([]api.Pod, error) {
 	return func(s ...string) ([]api.Pod, error) {
-		namespace, selector := DEFAULT_NAMESPACE, DEFAULT_SELECTOR
-		switch len(s) {
-		case 0:
-			break
-		case 1:
-			selector = s[0]
-		case 2:
-			selector = s[0]
-			namespace = s[1]
-		default:
-			return nil, fmt.Errorf("expected max 2 arguments, got %d", len(s))
-		}
-		pods, err := dm.Pods(namespace, selector)
-		if err != nil {
+		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
+			return dm.Pods(namespace, selector)
+		} else {
 			return nil, err
 		}
-		return pods, nil
 	}
 }
 
 // {{services "selector" "namespace"}}
 func services(dm *DependencyManager) func(...string) ([]api.Service, error) {
 	return func(s ...string) ([]api.Service, error) {
-		namespace, selector := DEFAULT_NAMESPACE, DEFAULT_SELECTOR
-		switch len(s) {
-		case 0:
-			break
-		case 1:
-			selector = s[0]
-		case 2:
-			selector = s[0]
-			namespace = s[1]
-		default:
-			return nil, fmt.Errorf("expected max 2 arguments, got %d", len(s))
-		}
-		services, err := dm.Services(namespace, selector)
-		if err != nil {
+		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
+			return dm.Services(namespace, selector)
+		} else {
 			return nil, err
 		}
-		return services, nil
+	}
+}
+
+// {{replicationcontrollers "selector" "namespace"}}
+func replicationcontrollers(dm *DependencyManager) func(...string) ([]api.ReplicationController, error) {
+	return func(s ...string) ([]api.ReplicationController, error) {
+		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
+			return dm.ReplicationControllers(namespace, selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{events "selector" "namespace"}}
+func events(dm *DependencyManager) func(...string) ([]api.Event, error) {
+	return func(s ...string) ([]api.Event, error) {
+		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
+			return dm.Events(namespace, selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{endpoints "selector" "namespace"}}
+func endpoints(dm *DependencyManager) func(...string) ([]api.Endpoints, error) {
+	return func(s ...string) ([]api.Endpoints, error) {
+		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
+			return dm.Endpoints(namespace, selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{nodes "selector"}}
+func nodes(dm *DependencyManager) func(...string) ([]api.Node, error) {
+	return func(s ...string) ([]api.Node, error) {
+		if selector, err := parseSelector(s...); err == nil {
+			return dm.Nodes(selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{namespaces "selector"}}
+func namespaces(dm *DependencyManager) func(...string) ([]api.Namespace, error) {
+	return func(s ...string) ([]api.Namespace, error) {
+		if selector, err := parseSelector(s...); err == nil {
+			return dm.Namespaces(selector)
+		} else {
+			return nil, err
+		}
 	}
 }
 

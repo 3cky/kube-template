@@ -25,10 +25,6 @@ const (
 	DEFAULT_HOST = "http://localhost:8080"
 )
 
-type ClientInterface interface {
-	Pods(namespace string, selector string) ([]api.Pod, error)
-}
-
 type Client struct {
 	kubeClient *kubeClient.Client
 }
@@ -77,4 +73,69 @@ func (c *Client) Services(namespace, selector string) ([]api.Service, error) {
 		return nil, err
 	}
 	return svcList.Items, nil
+}
+
+func (c *Client) ReplicationControllers(namespace, selector string) ([]api.ReplicationController, error) {
+	glog.V(4).Infof("fetching replication controllers, namespace: %q, selector: %q", namespace, selector)
+	s, err := labels.Parse(selector)
+	if err != nil {
+		return nil, err
+	}
+	rcList, err := c.kubeClient.ReplicationControllers(namespace).List(s, nil)
+	if err != nil {
+		return nil, err
+	}
+	return rcList.Items, nil
+}
+
+func (c *Client) Events(namespace, selector string) ([]api.Event, error) {
+	glog.V(4).Infof("fetching events, namespace: %q, selector: %q", namespace, selector)
+	s, err := labels.Parse(selector)
+	if err != nil {
+		return nil, err
+	}
+	evList, err := c.kubeClient.Events(namespace).List(s, nil)
+	if err != nil {
+		return nil, err
+	}
+	return evList.Items, nil
+}
+
+func (c *Client) Endpoints(namespace, selector string) ([]api.Endpoints, error) {
+	glog.V(4).Infof("fetching endpoints, namespace: %q, selector: %q", namespace, selector)
+	s, err := labels.Parse(selector)
+	if err != nil {
+		return nil, err
+	}
+	epList, err := c.kubeClient.Endpoints(namespace).List(s, nil)
+	if err != nil {
+		return nil, err
+	}
+	return epList.Items, nil
+}
+
+func (c *Client) Nodes(selector string) ([]api.Node, error) {
+	glog.V(4).Infof("fetching nodes, selector: %q", selector)
+	s, err := labels.Parse(selector)
+	if err != nil {
+		return nil, err
+	}
+	nodeList, err := c.kubeClient.Nodes().List(s, nil)
+	if err != nil {
+		return nil, err
+	}
+	return nodeList.Items, nil
+}
+
+func (c *Client) Namespaces(selector string) ([]api.Namespace, error) {
+	glog.V(4).Infof("fetching namespaces, selector: %q", selector)
+	s, err := labels.Parse(selector)
+	if err != nil {
+		return nil, err
+	}
+	nsList, err := c.kubeClient.Namespaces().List(s, nil)
+	if err != nil {
+		return nil, err
+	}
+	return nsList.Items, nil
 }

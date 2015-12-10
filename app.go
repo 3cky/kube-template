@@ -135,7 +135,7 @@ func (app *App) Run() {
 				glog.Errorf("command %q: %v", cmd, err)
 			}
 		} else {
-			fmt.Printf("(dry-run) executing: %q", cmd)
+			fmt.Printf("(dry-run) executing: %q\n", cmd)
 		}
 	}
 }
