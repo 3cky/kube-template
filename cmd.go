@@ -25,11 +25,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	"bytes"
 	"k8s.io/kubernetes/pkg/util"
 )
 
 const (
-	FLAG_V             = "v"
 	FLAG_STDERR_THRESH = "stderrthreshold"
 	FLAG_RUN_ONCE      = "once"
 	FLAG_DRY_RUN       = "dry-run"
@@ -37,14 +37,14 @@ const (
 	FLAG_CONFIG        = "config"
 	FLAG_POLL_TIME     = "poll-time"
 	FLAG_TEMPLATE      = "template"
+	FLAG_HELP_MD       = "help-md"
 )
 
 func newCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "kube-template",
-		Short: "kube-template",
-		Long:  "Watches Kubernetes for updates, writing output of a series of templates to files.",
-		Run:   runCmd,
+		Use:  "kube-template",
+		Long: "Watches Kubernetes for updates, writing output of a series of templates to files.",
+		Run:  runCmd,
 	}
 	initCmd(cmd)
 	return cmd
@@ -60,7 +60,8 @@ func initCmd(cmd *cobra.Command) {
 	f.StringVarP(&cfgFile, FLAG_CONFIG, "c", "", fmt.Sprintf("config file (default is ./%s.(yaml|json))", CFG_FILE))
 	f.StringSliceP(FLAG_TEMPLATE, "t", nil, `adds a new template to watch on disk in the format
 		'templatePath:outputPath[:command]'. This option is additive
-		and may be specified multiple times for multiple templates.`)
+		and may be specified multiple times for multiple templates`)
+	f.Bool(FLAG_HELP_MD, false, "get help in Markdown format")
 	// Merge glog-related flags
 	// FIXME probably we shouldn't use k8s utils there
 	pflag.CommandLine.AddFlagSet(f)
@@ -70,8 +71,14 @@ func initCmd(cmd *cobra.Command) {
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
-	config, err := newConfig(cmd)
+	if f, _ := cmd.Flags().GetBool(FLAG_HELP_MD); f {
+		out := new(bytes.Buffer)
+		cobra.GenMarkdown(cmd, out)
+		fmt.Println(out)
+		return
+	}
 
+	config, err := newConfig(cmd)
 	if err != nil {
 		glog.Fatalf("configuration error: %v", err)
 	}
