@@ -19,6 +19,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -55,6 +56,7 @@ func initCmd(cmd *cobra.Command) {
 	f.Bool(FLAG_DRY_RUN, false, "don't write template output, dump result to stdout")
 	f.Bool(FLAG_RUN_ONCE, false, "run template processing once and exit")
 	f.StringP(FLAG_SERVER, "s", "", "the address and port of the Kubernetes API server")
+	f.DurationP(FLAG_POLL_TIME, "p", 15*time.Second, "Kubernetes API server poll time")
 	f.StringVarP(&cfgFile, FLAG_CONFIG, "c", "", fmt.Sprintf("config file (default is ./%s.(yaml|json))", CFG_FILE))
 	f.StringSliceP(FLAG_TEMPLATE, "t", nil, `adds a new template to watch on disk in the format
 		'templatePath:outputPath[:command]'. This option is additive
