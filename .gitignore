@@ -1,0 +1,9 @@
+# Folders
+_test
+
+# IDE files
+*.iml
+*.idea
+
+bin/
+pkg/
