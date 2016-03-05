@@ -17,6 +17,7 @@ package main
 import (
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/client/restclient"
 	kubeClient "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/labels"
 )
@@ -35,11 +36,11 @@ func newClient(cfg *Config) (*Client, error) {
 		host = cfg.Server
 	}
 
-	config := kubeClient.Config{
+	config := &restclient.Config{
 		Host: host,
 	}
 
-	c, err := kubeClient.New(&config)
+	c, err := kubeClient.New(config)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +56,8 @@ func (c *Client) Pods(namespace, selector string) ([]api.Pod, error) {
 	if err != nil {
 		return nil, err
 	}
-	podList, err := c.kubeClient.Pods(namespace).List(s, nil)
+	options := api.ListOptions{LabelSelector: s}
+	podList, err := c.kubeClient.Pods(namespace).List(options)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +70,8 @@ func (c *Client) Services(namespace, selector string) ([]api.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	svcList, err := c.kubeClient.Services(namespace).List(s, nil)
+	options := api.ListOptions{LabelSelector: s}
+	svcList, err := c.kubeClient.Services(namespace).List(options)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +84,8 @@ func (c *Client) ReplicationControllers(namespace, selector string) ([]api.Repli
 	if err != nil {
 		return nil, err
 	}
-	rcList, err := c.kubeClient.ReplicationControllers(namespace).List(s, nil)
+	options := api.ListOptions{LabelSelector: s}
+	rcList, err := c.kubeClient.ReplicationControllers(namespace).List(options)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +98,8 @@ func (c *Client) Events(namespace, selector string) ([]api.Event, error) {
 	if err != nil {
 		return nil, err
 	}
-	evList, err := c.kubeClient.Events(namespace).List(s, nil)
+	options := api.ListOptions{LabelSelector: s}
+	evList, err := c.kubeClient.Events(namespace).List(options)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +112,8 @@ func (c *Client) Endpoints(namespace, selector string) ([]api.Endpoints, error) 
 	if err != nil {
 		return nil, err
 	}
-	epList, err := c.kubeClient.Endpoints(namespace).List(s, nil)
+	options := api.ListOptions{LabelSelector: s}
+	epList, err := c.kubeClient.Endpoints(namespace).List(options)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +126,8 @@ func (c *Client) Nodes(selector string) ([]api.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	nodeList, err := c.kubeClient.Nodes().List(s, nil)
+	options := api.ListOptions{LabelSelector: s}
+	nodeList, err := c.kubeClient.Nodes().List(options)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +140,8 @@ func (c *Client) Namespaces(selector string) ([]api.Namespace, error) {
 	if err != nil {
 		return nil, err
 	}
-	nsList, err := c.kubeClient.Namespaces().List(s, nil)
+	options := api.ListOptions{LabelSelector: s}
+	nsList, err := c.kubeClient.Namespaces().List(options)
 	if err != nil {
 		return nil, err
 	}
