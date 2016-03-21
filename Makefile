@@ -34,6 +34,9 @@ install: vendor_get
 build: vet
 	go build -v -o ./bin/$(PKG_NAME)
 
+clean: vendor_clean
+	rm -dRf ./bin
+
 doc:
 	godoc -http=:6060
 

@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	DEFAULT_HOST = "http://localhost:8080"
+	DEFAULT_MASTER_HOST = "http://127.0.0.1:8080/"
 )
 
 type Client struct {
@@ -31,9 +31,9 @@ type Client struct {
 }
 
 func newClient(cfg *Config) (*Client, error) {
-	host := DEFAULT_HOST
-	if cfg.Server != "" {
-		host = cfg.Server
+	host := DEFAULT_MASTER_HOST
+	if cfg.Master != "" {
+		host = cfg.Master
 	}
 
 	config := &restclient.Config{

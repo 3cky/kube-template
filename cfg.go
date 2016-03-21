@@ -26,7 +26,7 @@ import (
 
 const (
 	CFG_FILE      = "kube-template"
-	CFG_SERVER    = FLAG_SERVER
+	CFG_MASTER    = FLAG_MASTER
 	CFG_POLL_TIME = FLAG_POLL_TIME
 )
 
@@ -38,7 +38,7 @@ type Config struct {
 	// Run template processing once and exit
 	RunOnce bool
 	// Kubernetes API server address
-	Server string
+	Master string
 	// Kubernetes API server poll time
 	PollTime time.Duration
 
@@ -67,7 +67,7 @@ func readConfig(cmd *cobra.Command) {
 	viper.AddConfigPath(".")      // adding home directory as first search path
 	viper.AutomaticEnv()          // read in environment variables that match
 
-	viper.BindPFlag(CFG_SERVER, cmd.Flags().Lookup(FLAG_SERVER))
+	viper.BindPFlag(CFG_MASTER, cmd.Flags().Lookup(FLAG_MASTER))
 	viper.BindPFlag(CFG_POLL_TIME, cmd.Flags().Lookup(FLAG_POLL_TIME))
 
 	// If a config file is found, read it in.
@@ -118,7 +118,7 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 	// Read config from file, if present
 	readConfig(cmd)
 	// Get command line / config options
-	config.Server = viper.GetString(CFG_SERVER)
+	config.Master = viper.GetString(CFG_MASTER)
 	config.PollTime = viper.GetDuration(CFG_POLL_TIME)
 	// Add template descriptors specified by command line
 	cmdTemplates, err := cmd.Flags().GetStringSlice(FLAG_TEMPLATE)

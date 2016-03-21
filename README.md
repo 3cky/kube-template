@@ -19,13 +19,13 @@ Usage
       --log-dir="": If non-empty, write log files in this directory
       --log-flush-frequency=5s: Maximum number of seconds between log flushes
       --logtostderr[=true]: log to standard error instead of files
+      --master="": Kubernetes API server address (default is http://127.0.0.1:8080/)
       --once[=false]: run template processing once and exit
   -p, --poll-time=15s: Kubernetes API server poll time
-  -s, --server="": the address and port of the Kubernetes API server
       --stderrthreshold=2: logs at or above this threshold go to stderr
   -t, --template=[]: adds a new template to watch on disk in the format
 		'templatePath:outputPath[:command]'. This option is additive
-		and may be specified multiple times for multiple templates.
+		and may be specified multiple times for multiple templates
       --v=0: log level for V logs
       --vmodule=: comma-separated list of pattern=N settings for file-filtered logging
 ```
@@ -36,8 +36,8 @@ Process single template using data from remote Kubernetes API server and exit:
 
 ```shell
 $ kube-template \
-    --server http://kube-api.server.com:8080 \
-    --template "/tmp/input.tmpl:/tmp/output.txt" \ 
+    --master="http://kube-api.server.com:8080" \
+    --template="/tmp/input.tmpl:/tmp/output.txt" \ 
     --once 
 ```
 
@@ -45,8 +45,8 @@ Monitor local Kubernetes API server for updates every 30 seconds and update ngin
 
 ```shell
 $ kube-template \
-    --template "/tmp/nginx.tmpl:/etc/nginx/nginx.conf:service nginx reload" \ 
-    --template "/tmp/haproxy.tmpl:/etc/haproxy/haproxy.conf:service haproxy reload" \
+    --template="/tmp/nginx.tmpl:/etc/nginx/nginx.conf:service nginx reload" \ 
+    --template="/tmp/haproxy.tmpl:/etc/haproxy/haproxy.conf:service haproxy reload" \
     --poll-time=30s
 ```
 
@@ -57,7 +57,7 @@ $ kube-template \
  YAML configuration file example:
  
 ```yaml
- server: http://localhost:8080
+ master: http://localhost:8080
  poll-time: 10s
  
  templates:

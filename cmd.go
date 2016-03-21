@@ -33,7 +33,7 @@ const (
 	FLAG_STDERR_THRESH = "stderrthreshold"
 	FLAG_RUN_ONCE      = "once"
 	FLAG_DRY_RUN       = "dry-run"
-	FLAG_SERVER        = "server"
+	FLAG_MASTER        = "master"
 	FLAG_CONFIG        = "config"
 	FLAG_POLL_TIME     = "poll-time"
 	FLAG_TEMPLATE      = "template"
@@ -55,7 +55,7 @@ func initCmd(cmd *cobra.Command) {
 	f := cmd.Flags()
 	f.Bool(FLAG_DRY_RUN, false, "don't write template output, dump result to stdout")
 	f.Bool(FLAG_RUN_ONCE, false, "run template processing once and exit")
-	f.StringP(FLAG_SERVER, "s", "", "the address and port of the Kubernetes API server")
+	f.String(FLAG_MASTER, "", fmt.Sprintf("Kubernetes API server address (default is %s)", DEFAULT_MASTER_HOST))
 	f.DurationP(FLAG_POLL_TIME, "p", 15*time.Second, "Kubernetes API server poll time")
 	f.StringVarP(&cfgFile, FLAG_CONFIG, "c", "", fmt.Sprintf("config file (default is ./%s.(yaml|json))", CFG_FILE))
 	f.StringSliceP(FLAG_TEMPLATE, "t", nil, `adds a new template to watch on disk in the format
