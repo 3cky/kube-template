@@ -1,0 +1,11 @@
+# logging to stderr means we get it in the systemd journal
+KUBE_LOGTOSTDERR="--logtostderr=true"
+
+# kube-template verbosity level, 0 is minimum verbosity
+KUBE_LOG_LEVEL="--v=0"
+
+# how kube-template find the apiserver
+KUBE_MASTER="--master=http://127.0.0.1:8080"
+
+# kube-template run args
+KUBE_TEMPLATE_ARGS="-c /etc/kube-template/kube-template.yaml"

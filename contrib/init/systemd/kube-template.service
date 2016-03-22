@@ -1,0 +1,18 @@
+[Unit]
+Description=kube-template watching Kubernetes for updates, writing output of a series of templates to files
+Documentation=https://github.com/3cky/kube-template
+After=network.target
+
+[Service]
+EnvironmentFile=-/etc/kube-template/config
+ExecStart=/usr/bin/kube-template \
+	    $KUBE_LOGTOSTDERR \
+	    $KUBE_LOG_LEVEL \
+	    $KUBE_MASTER \
+	    $KUBE_TEMPLATE_ARGS
+WorkingDirectory=/etc/kube-template
+Restart=on-failure
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
