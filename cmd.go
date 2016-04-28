@@ -15,9 +15,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -30,14 +32,13 @@ import (
 )
 
 const (
-	FLAG_STDERR_THRESH = "stderrthreshold"
-	FLAG_RUN_ONCE      = "once"
-	FLAG_DRY_RUN       = "dry-run"
-	FLAG_MASTER        = "master"
-	FLAG_CONFIG        = "config"
-	FLAG_POLL_TIME     = "poll-time"
-	FLAG_TEMPLATE      = "template"
-	FLAG_HELP_MD       = "help-md"
+	FLAG_RUN_ONCE  = "once"
+	FLAG_DRY_RUN   = "dry-run"
+	FLAG_MASTER    = "master"
+	FLAG_CONFIG    = "config"
+	FLAG_POLL_TIME = "poll-time"
+	FLAG_TEMPLATE  = "template"
+	FLAG_HELP_MD   = "help-md"
 )
 
 func newCmd() *cobra.Command {
@@ -62,15 +63,22 @@ func initCmd(cmd *cobra.Command) {
 		'templatePath:outputPath[:command]'. This option is additive
 		and may be specified multiple times for multiple templates`)
 	f.Bool(FLAG_HELP_MD, false, "get help in Markdown format")
-	// Merge glog-related flags
-	// FIXME probably we shouldn't use k8s utils there
+	// Merge flags
+	pflag.CommandLine.SetNormalizeFunc(func(_ *pflag.FlagSet, name string) pflag.NormalizedName {
+		if strings.Contains(name, "_") {
+			return pflag.NormalizedName(strings.Replace(name, "_", "-", -1))
+		}
+		return pflag.NormalizedName(name)
+	})
 	pflag.CommandLine.AddFlagSet(f)
-	util.InitFlags()
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	// Init logs
+	// FIXME probably we shouldn't use k8s utils there
 	util.InitLogs()
 	defer util.FlushLogs()
 }
 
-func runCmd(cmd *cobra.Command, args []string) {
+func runCmd(cmd *cobra.Command, _ []string) {
 	if f, _ := cmd.Flags().GetBool(FLAG_HELP_MD); f {
 		out := new(bytes.Buffer)
 		cobra.GenMarkdown(cmd, out)
