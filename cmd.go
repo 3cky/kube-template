@@ -86,20 +86,33 @@ func runCmd(cmd *cobra.Command, _ []string) {
 		return
 	}
 
-	config, err := newConfig(cmd)
-	if err != nil {
-		glog.Fatalf("configuration error: %v", err)
-	}
-	if len(config.TemplateDescriptors) == 0 {
-		glog.Fatalf("no templates to process (use --help to get configuration options), exiting...")
+	getConfig := func() (*Config, error) {
+		config, err := newConfig(cmd)
+		if err != nil {
+			return nil, err
+		}
+		if len(config.TemplateDescriptors) == 0 {
+			return nil, fmt.Errorf("no templates to process")
+		}
+		return config, nil
 	}
 
-	// Start application
+	config, err := getConfig()
+	if err != nil {
+		glog.Fatalf("config error: %v, exiting...", err)
+	}
+
 	app, err := newApp(config)
 	if err != nil {
-		glog.Fatalf("can't create application: %v", err)
+		glog.Fatalf("config couldn't be used: %v", err)
 	}
 
+	if config.RunOnce {
+		app.RunOnce()
+		return
+	}
+
+	// Start templates processing
 	go app.Start()
 
 	// Listen for signals
@@ -116,10 +129,37 @@ EventLoop:
 	for {
 		select {
 		case signal := <-signalCh:
-			glog.V(2).Infof("received %v signal, stopping", signal)
-			app.Stop()
-		case <-app.doneCh:
-			break EventLoop
+			switch signal {
+			case syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
+				glog.V(2).Infof("received %v signal...", signal)
+				// Stop templates processing and exit
+				app.Stop()
+				select {
+				case <-app.doneCh:
+					break EventLoop
+				}
+			case syscall.SIGHUP:
+				glog.V(2).Infof("received %v signal, reloading config", signal)
+				config, err := getConfig()
+				if err != nil {
+					glog.Errorf("config reloading error: %v", err)
+					continue
+				}
+				newApp, err := newApp(config)
+				if err != nil {
+					glog.Errorf("reloaded config couldn't be used: %v", err)
+					continue
+				}
+				// Stop templates processing using current config
+				app.Stop()
+				select {
+				case <-app.doneCh:
+					// Start templates processing using new config
+					app = newApp
+					go app.Start()
+
+				}
+			}
 		}
 	}
 }

@@ -63,18 +63,12 @@ func newApp(cfg *Config) (*App, error) {
 }
 
 func (app *App) Start() {
-	glog.V(1).Infoln("starting application...")
+	glog.V(1).Infoln("starting templates processing...")
 
-	defer glog.V(1).Infoln("application stopped")
+	defer glog.V(1).Infoln("templates processing stopped")
 
 	// Initial templates processing run
 	app.Run()
-
-	if app.config.RunOnce {
-		glog.V(1).Infoln("run once requested, exiting...")
-		close(app.doneCh)
-		return
-	}
 
 MainLoop:
 	for {
@@ -88,6 +82,12 @@ MainLoop:
 	}
 }
 
+func (app *App) RunOnce() {
+	glog.V(1).Infoln("run once templates processing...")
+	app.Run()
+	glog.V(1).Infoln("templates processed")
+}
+
 func (app *App) Run() {
 	// Create dependency manager
 	dm := newDependencyManager(app.client)
@@ -95,7 +95,7 @@ func (app *App) Run() {
 	var commands []string
 	// Process templates
 	for _, t := range app.templates {
-		glog.V(2).Infof("process template: %s", t.name)
+		glog.V(2).Infof("processing template: %s", t.name)
 		if updated, err := t.Process(dm, app.config.DryRun); err == nil {
 			if updated {
 				if !app.config.DryRun {
@@ -141,6 +141,6 @@ func (app *App) Run() {
 }
 
 func (app *App) Stop() {
-	glog.V(1).Infoln("stopping application...")
+	glog.V(1).Infoln("stopping templates processing...")
 	close(app.stopCh)
 }
