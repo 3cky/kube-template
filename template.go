@@ -18,7 +18,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"path/filepath"
-	"text/template"
+	gotemplate "text/template"
 
 	"fmt"
 	"k8s.io/kubernetes/pkg/api"
@@ -37,26 +37,43 @@ type Template struct {
 	// Template name (base file name)
 	name string
 
+	// Go template to render
+	template *gotemplate.Template
+
 	// Template last output (in case of successfully rendered template)
 	lastOutput string
 }
 
-func newTemplate(d *TemplateDescriptor) *Template {
+func newTemplate(dm *DependencyManager, d *TemplateDescriptor) (*Template, error) {
+	// Template name
+	name := filepath.Base(d.Path)
 	// Get last template output, if present
 	o, err := ioutil.ReadFile(d.Output)
 	if err != nil {
 		o = nil
 	}
+	// Read template data
+	data, err := ioutil.ReadFile(d.Path)
+	if err != nil {
+		return nil, err
+	}
+	s := string(data)
+	// Create Go template from read data
+	template, err := gotemplate.New(name).Funcs(funcMap(dm)).Parse(s)
+	if err != nil {
+		return nil, err
+	}
 	// Create template
 	return &Template{
 		desc:       d,
-		name:       filepath.Base(d.Path),
+		name:       name,
+		template:   template,
 		lastOutput: string(o),
-	}
+	}, nil
 }
 
-func (t *Template) Process(dm *DependencyManager, dryRun bool) (bool, error) {
-	if r, err := t.Render(dm); err == nil {
+func (t *Template) Process(dryRun bool) (bool, error) {
+	if r, err := t.Render(); err == nil {
 		if changed := !(r == t.lastOutput); changed {
 			// Template output changed
 			if !dryRun {
@@ -78,7 +95,6 @@ func (t *Template) Process(dm *DependencyManager, dryRun bool) (bool, error) {
 
 func (t *Template) Write(content []byte) error {
 	dir := filepath.Dir(t.desc.Output)
-	name := filepath.Base(t.desc.Output)
 	if _, err := os.Stat(t.desc.Output); os.IsNotExist(err) {
 		// Output file does not exist, create intermediate dirs and write directly
 		if err := os.MkdirAll(dir, 0755); err != nil {
@@ -91,7 +107,7 @@ func (t *Template) Write(content []byte) error {
 	} else {
 		// Output file exist, update atomically using temp file
 		var f *os.File
-		if f, err = ioutil.TempFile(dir, name); err != nil {
+		if f, err = ioutil.TempFile(dir, t.name); err != nil {
 			return err
 		}
 		defer os.Remove(f.Name())
@@ -117,29 +133,18 @@ func (t *Template) Write(content []byte) error {
 	return nil
 }
 
-func (t *Template) Render(dm *DependencyManager) (string, error) {
-	// Read template data
-	data, err := ioutil.ReadFile(t.desc.Path)
-	if err != nil {
-		return "", err
-	}
-	s := string(data)
-	// Create template from read data
-	template, err := template.New(t.name).Funcs(funcMap(dm)).Parse(s)
-	if err != nil {
-		return "", err
-	}
+func (t *Template) Render() (string, error) {
 	// Render template to buffer
 	buf := new(bytes.Buffer)
-	if err := template.Execute(buf, nil); err != nil {
+	if err := t.template.Execute(buf, nil); err != nil {
 		return "", err
 	}
 
 	return buf.String(), nil
 }
 
-func funcMap(dm *DependencyManager) template.FuncMap {
-	return template.FuncMap{
+func funcMap(dm *DependencyManager) gotemplate.FuncMap {
+	return gotemplate.FuncMap{
 		// Kubernetes objects
 		"pods":                   pods(dm),
 		"services":               services(dm),

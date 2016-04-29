@@ -34,6 +34,9 @@ type App struct {
 	// Kubernetes client
 	client *Client
 
+	// Dependency manager
+	dm *DependencyManager
+
 	// Templates to process
 	templates []*Template
 }
@@ -46,18 +49,25 @@ func newApp(cfg *Config) (*App, error) {
 	app.stopCh = make(chan interface{})
 	app.doneCh = make(chan interface{})
 
-	// Add all configured templates
-	app.templates = make([]*Template, 0, len(cfg.TemplateDescriptors))
-	for _, d := range cfg.TemplateDescriptors {
-		app.templates = append(app.templates, newTemplate(d))
-	}
-
 	// Create Kubernetes client
 	c, err := newClient(cfg)
 	if err != nil {
 		return nil, err
 	}
 	app.client = c
+
+	// Create dependency manager
+	app.dm = newDependencyManager(c)
+
+	// Add all configured templates
+	app.templates = make([]*Template, 0, len(cfg.TemplateDescriptors))
+	for _, d := range cfg.TemplateDescriptors {
+		t, err := newTemplate(app.dm, d)
+		if err != nil {
+			return nil, err
+		}
+		app.templates = append(app.templates, t)
+	}
 
 	return app, nil
 }
@@ -89,14 +99,12 @@ func (app *App) RunOnce() {
 }
 
 func (app *App) Run() {
-	// Create dependency manager
-	dm := newDependencyManager(app.client)
 	// Commands to execute are stored in list instead of map to ensure correct execution order
 	var commands []string
 	// Process templates
 	for _, t := range app.templates {
 		glog.V(2).Infof("processing template: %s", t.name)
-		if updated, err := t.Process(dm, app.config.DryRun); err == nil {
+		if updated, err := t.Process(app.config.DryRun); err == nil {
 			if updated {
 				if !app.config.DryRun {
 					glog.V(2).Infof("template output updated: %s", t.name)
