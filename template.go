@@ -22,6 +22,7 @@ import (
 
 	"fmt"
 	"k8s.io/kubernetes/pkg/api"
+	"os"
 )
 
 const (
@@ -59,9 +60,8 @@ func (t *Template) Process(dm *DependencyManager, dryRun bool) (bool, error) {
 		if changed := !(r == t.lastOutput); changed {
 			// Template output changed
 			if !dryRun {
-				// TODO file mode from config
-				// TODO atomic write
-				if err := ioutil.WriteFile(t.desc.Output, []byte(r), 0644); err != nil {
+				if err := t.Write([]byte(r)); err != nil {
+					// Can't write template output
 					return false, err
 				}
 			}
@@ -74,6 +74,47 @@ func (t *Template) Process(dm *DependencyManager, dryRun bool) (bool, error) {
 		// Can't render template
 		return false, err
 	}
+}
+
+func (t *Template) Write(content []byte) error {
+	dir := filepath.Dir(t.desc.Output)
+	name := filepath.Base(t.desc.Output)
+	if _, err := os.Stat(t.desc.Output); os.IsNotExist(err) {
+		// Output file does not exist, create intermediate dirs and write directly
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+		// TODO file mode from config
+		if err := ioutil.WriteFile(t.desc.Output, content, 0644); err != nil {
+			return err
+		}
+	} else {
+		// Output file exist, update atomically using temp file
+		var f *os.File
+		if f, err = ioutil.TempFile(dir, name); err != nil {
+			return err
+		}
+		defer os.Remove(f.Name())
+		// Write template output to temp file
+		if _, err := f.Write(content); err != nil {
+			return err
+		}
+		if err := f.Sync(); err != nil {
+			return err
+		}
+		if err := f.Close(); err != nil {
+			return err
+		}
+		// TODO file mode from config
+		if err := os.Chmod(f.Name(), 0644); err != nil {
+			return err
+		}
+		// Rename temp file to output file
+		if err := os.Rename(f.Name(), t.desc.Output); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (t *Template) Render(dm *DependencyManager) (string, error) {
