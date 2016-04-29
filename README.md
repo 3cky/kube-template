@@ -71,6 +71,11 @@ $ kube-template \
 
 ___Please note___: templates specified on the command line take precedence over those defined in a config file.
 
+### Signals
+
+- **TERM, QUIT, INT:** graceful shutdown
+- **HUP:** reload configuration file
+
 ### Templating Language
 
 `kube-template` works with templates in the [Go Template][] format. In addition to the [standard template functions][Go Template], `kube-template` provides the following functions:
@@ -149,7 +154,6 @@ Returns the subtract of integer `b` from integer `a`.
 * Track Kubernetes changes using resource watch API
 * More API and helper template functions
 * Add options for API server authentication
-* Implement configuration file reloading
 * Add tests
 
 ## Contributing
