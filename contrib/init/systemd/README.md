@@ -18,4 +18,6 @@ Place service file to `/etc/systemd/system/` directory, environment file (`confi
 
 Start kube-template service: `systemctl start kube-template`.
 
+Reload kube-template config: `systemctl reload kube-template`.
+
 Enable kube-template service to run on boot: `systemctl enable kube-template`.
