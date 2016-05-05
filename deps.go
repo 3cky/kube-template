@@ -36,6 +36,12 @@ func newDependencyManager(client *Client) *DependencyManager {
 	}
 }
 
+func (dm *DependencyManager) flushCachedDependencies() {
+	dm.RLock()
+	defer dm.RUnlock()
+	dm.cachedDeps = make(map[string]interface{})
+}
+
 func (dm *DependencyManager) cachedDependency(key string) (interface{}, bool) {
 	dm.RLock()
 	defer dm.RUnlock()

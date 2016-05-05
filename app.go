@@ -101,6 +101,8 @@ func (app *App) RunOnce() {
 func (app *App) Run() {
 	// Commands to execute are stored in list instead of map to ensure correct execution order
 	var commands []string
+	// Flush cached dependencies
+	app.dm.flushCachedDependencies()
 	// Process templates
 	for _, t := range app.templates {
 		glog.V(2).Infof("processing template: %s", t.name)
