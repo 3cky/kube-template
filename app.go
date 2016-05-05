@@ -75,17 +75,24 @@ func newApp(cfg *Config) (*App, error) {
 func (app *App) Start() {
 	glog.V(1).Infoln("starting templates processing...")
 
+	defer close(app.doneCh)
+
 	defer glog.V(1).Infoln("templates processing stopped")
 
 	// Initial templates processing run
 	app.Run()
 
-MainLoop:
+	if app.config.PollTime.Nanoseconds() <= 0 {
+		select {
+		case <-app.stopCh:
+			return
+		}
+	}
+
 	for {
 		select {
 		case <-app.stopCh:
-			close(app.doneCh)
-			break MainLoop
+			return
 		case <-time.After(app.config.PollTime):
 			app.Run()
 		}
