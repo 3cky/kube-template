@@ -1,6 +1,5 @@
 # Folders
 _test
-_vendor
 
 # IDE files
 *.iml
@@ -8,3 +7,4 @@ _vendor
 
 bin/
 pkg/
+vendor/*/

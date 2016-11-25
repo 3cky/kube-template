@@ -1,37 +1,22 @@
-.PHONY: vendor_clean vendor_restore vendor_get install build doc fmt lint test vet godep bench
+.PHONY: vendor_clean vendor_update vendor_sync install build doc fmt lint test vet godep bench
 
 PKG_NAME=$(shell basename `pwd`)
 
-GOPATH := ${PWD}/_vendor:${GOPATH}
-export GOPATH
-
-default: build
+default: install
 
 vendor_clean:
-	rm -dRf ./_vendor/src
+	govendor remove +u
 
-vendor_fetch:
-	GOPATH=${PWD}/_vendor go get -d -u -v \
-	    github.com/golang/glog \
-	    github.com/spf13/cobra \
-	    github.com/spf13/viper \
-	    k8s.io/kubernetes/pkg/api \
-	    k8s.io/kubernetes/pkg/labels \
-	    k8s.io/kubernetes/pkg/util \
-	    k8s.io/kubernetes/pkg/client/unversioned
+vendor_update:
+	govendor update +vendor
 
-vendor_restore:
-	cd ${PWD}/_vendor/src/k8s.io/kubernetes && \
-	    GOPATH=${PWD}/_vendor godep restore
-#	mkdir -p _vendor/src/github.com/3cky
-#	ln -s `pwd` _vendor/src/github.com/3cky/kube-template # for IDEA Go plugin project build and run
+vendor_sync:
+	govendor sync -v
 
-vendor_get: vendor_clean vendor_fetch vendor_restore
-
-install: vendor_get
+install: vendor_sync
 	go get -t -v ./...
 
-build: vet
+build: vendor_sync
 	go build -v -o ./bin/$(PKG_NAME)
 
 clean: vendor_clean
@@ -58,6 +43,3 @@ bench:
 # https://godoc.org/golang.org/x/tools/cmd/vet
 vet:
 	go vet ./...
-
-godep:
-	godep save ./...

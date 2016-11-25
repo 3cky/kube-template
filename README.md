@@ -5,6 +5,15 @@ Inspired by HashiCorp's [Consul Template][], `kube-template` is a utility that q
 
 **Please note this is work in progress.**
 
+Installation
+------------
+
+- Install [Go vendor tool][]: `go get -u github.com/kardianos/govendor`
+- For Go 1.5 make sure you have set **GO15VENDOREXPERIMENT=1** environment variable (set by default in Go 1.6)
+- `git pull https://github.com/3cky/kube-template.git`
+- `cd kube-template`
+- make install
+
 Usage
 -----
 
@@ -171,3 +180,4 @@ Returns the subtract of integer `b` from integer `a`.
 [Kubernetes]: http://kubernetes.io/ "Manage a cluster of Linux containers as a single system to accelerate Dev and simplify Ops"
 [Consul Template]: https://github.com/hashicorp/consul-template "A convenient way to populate values from Consul into the filesystem using the consul-template daemon"
 [Go Template]: http://golang.org/pkg/text/template/ "Go Template"
+[Go vendor tool]: https://github.com/kardianos/govendor "Go vendor tool that works with the standard vendor file."

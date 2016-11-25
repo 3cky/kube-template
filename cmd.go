@@ -25,10 +25,11 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"github.com/spf13/cobra/doc"
 	"github.com/spf13/pflag"
+	"k8s.io/kubernetes/pkg/util/logs"
 
 	"bytes"
-	"k8s.io/kubernetes/pkg/util"
 )
 
 const (
@@ -73,15 +74,15 @@ func initCmd(cmd *cobra.Command) {
 	pflag.CommandLine.AddFlagSet(f)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	// Init logs
-	// FIXME probably we shouldn't use k8s utils there
-	util.InitLogs()
-	defer util.FlushLogs()
+	// FIXME probably we shouldn't use k8s log methods there
+	logs.InitLogs()
+	defer logs.FlushLogs()
 }
 
 func runCmd(cmd *cobra.Command, _ []string) {
 	if f, _ := cmd.Flags().GetBool(FLAG_HELP_MD); f {
 		out := new(bytes.Buffer)
-		cobra.GenMarkdown(cmd, out)
+		doc.GenMarkdown(cmd, out)
 		fmt.Println(out)
 		return
 	}

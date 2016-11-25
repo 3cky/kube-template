@@ -16,10 +16,9 @@ package main
 
 import (
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	kubeClient "k8s.io/kubernetes/pkg/client/unversioned"
-	"k8s.io/kubernetes/pkg/labels"
+	"k8s.io/client-go/kubernetes"
+	api "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/rest"
 )
 
 const (
@@ -27,7 +26,7 @@ const (
 )
 
 type Client struct {
-	kubeClient *kubeClient.Client
+	kubeClient *kubernetes.Clientset
 }
 
 func newClient(cfg *Config) (*Client, error) {
@@ -36,11 +35,11 @@ func newClient(cfg *Config) (*Client, error) {
 		host = cfg.Master
 	}
 
-	config := &restclient.Config{
+	config := &rest.Config{
 		Host: host,
 	}
 
-	c, err := kubeClient.New(config)
+	c, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}
@@ -52,11 +51,7 @@ func newClient(cfg *Config) (*Client, error) {
 
 func (c *Client) Pods(namespace, selector string) ([]api.Pod, error) {
 	glog.V(4).Infof("fetching pods, namespace: %q, selector: %q", namespace, selector)
-	s, err := labels.Parse(selector)
-	if err != nil {
-		return nil, err
-	}
-	options := api.ListOptions{LabelSelector: s}
+	options := api.ListOptions{LabelSelector: selector}
 	podList, err := c.kubeClient.Pods(namespace).List(options)
 	if err != nil {
 		return nil, err
@@ -66,11 +61,7 @@ func (c *Client) Pods(namespace, selector string) ([]api.Pod, error) {
 
 func (c *Client) Services(namespace, selector string) ([]api.Service, error) {
 	glog.V(4).Infof("fetching services, namespace: %q, selector: %q", namespace, selector)
-	s, err := labels.Parse(selector)
-	if err != nil {
-		return nil, err
-	}
-	options := api.ListOptions{LabelSelector: s}
+	options := api.ListOptions{LabelSelector: selector}
 	svcList, err := c.kubeClient.Services(namespace).List(options)
 	if err != nil {
 		return nil, err
@@ -80,11 +71,7 @@ func (c *Client) Services(namespace, selector string) ([]api.Service, error) {
 
 func (c *Client) ReplicationControllers(namespace, selector string) ([]api.ReplicationController, error) {
 	glog.V(4).Infof("fetching replication controllers, namespace: %q, selector: %q", namespace, selector)
-	s, err := labels.Parse(selector)
-	if err != nil {
-		return nil, err
-	}
-	options := api.ListOptions{LabelSelector: s}
+	options := api.ListOptions{LabelSelector: selector}
 	rcList, err := c.kubeClient.ReplicationControllers(namespace).List(options)
 	if err != nil {
 		return nil, err
@@ -94,11 +81,7 @@ func (c *Client) ReplicationControllers(namespace, selector string) ([]api.Repli
 
 func (c *Client) Events(namespace, selector string) ([]api.Event, error) {
 	glog.V(4).Infof("fetching events, namespace: %q, selector: %q", namespace, selector)
-	s, err := labels.Parse(selector)
-	if err != nil {
-		return nil, err
-	}
-	options := api.ListOptions{LabelSelector: s}
+	options := api.ListOptions{LabelSelector: selector}
 	evList, err := c.kubeClient.Events(namespace).List(options)
 	if err != nil {
 		return nil, err
@@ -108,11 +91,7 @@ func (c *Client) Events(namespace, selector string) ([]api.Event, error) {
 
 func (c *Client) Endpoints(namespace, selector string) ([]api.Endpoints, error) {
 	glog.V(4).Infof("fetching endpoints, namespace: %q, selector: %q", namespace, selector)
-	s, err := labels.Parse(selector)
-	if err != nil {
-		return nil, err
-	}
-	options := api.ListOptions{LabelSelector: s}
+	options := api.ListOptions{LabelSelector: selector}
 	epList, err := c.kubeClient.Endpoints(namespace).List(options)
 	if err != nil {
 		return nil, err
@@ -122,11 +101,7 @@ func (c *Client) Endpoints(namespace, selector string) ([]api.Endpoints, error) 
 
 func (c *Client) Nodes(selector string) ([]api.Node, error) {
 	glog.V(4).Infof("fetching nodes, selector: %q", selector)
-	s, err := labels.Parse(selector)
-	if err != nil {
-		return nil, err
-	}
-	options := api.ListOptions{LabelSelector: s}
+	options := api.ListOptions{LabelSelector: selector}
 	nodeList, err := c.kubeClient.Nodes().List(options)
 	if err != nil {
 		return nil, err
@@ -136,11 +111,7 @@ func (c *Client) Nodes(selector string) ([]api.Node, error) {
 
 func (c *Client) Namespaces(selector string) ([]api.Namespace, error) {
 	glog.V(4).Infof("fetching namespaces, selector: %q", selector)
-	s, err := labels.Parse(selector)
-	if err != nil {
-		return nil, err
-	}
-	options := api.ListOptions{LabelSelector: s}
+	options := api.ListOptions{LabelSelector: selector}
 	nsList, err := c.kubeClient.Namespaces().List(options)
 	if err != nil {
 		return nil, err
