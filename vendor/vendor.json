@@ -1273,12 +1273,6 @@
 			"revisionTime": "2016-11-24T08:15:51Z"
 		},
 		{
-			"checksumSHA1": "peIBFDywRHy4Pn/4tSi7p5WsQ4s=",
-			"path": "k8s.io/kubernetes/pkg/util/logs",
-			"revision": "545f749a0deb8535656ce93ac1f35a59887839bf",
-			"revisionTime": "2016-11-24T23:21:21Z"
-		},
-		{
 			"checksumSHA1": "3xSu2zk0jG0hC5R/hPTWzd65RLQ=",
 			"path": "k8s.io/kubernetes/pkg/util/runtime",
 			"revision": "545f749a0deb8535656ce93ac1f35a59887839bf",

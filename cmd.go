@@ -27,7 +27,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 	"github.com/spf13/pflag"
-	"k8s.io/kubernetes/pkg/util/logs"
 
 	"bytes"
 )
@@ -73,10 +72,9 @@ func initCmd(cmd *cobra.Command) {
 	})
 	pflag.CommandLine.AddFlagSet(f)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	// Init logs
-	// FIXME probably we shouldn't use k8s log methods there
-	logs.InitLogs()
-	defer logs.FlushLogs()
+	// Init logging
+	initLogs()
+	defer flushLogs()
 }
 
 func runCmd(cmd *cobra.Command, _ []string) {
