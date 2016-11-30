@@ -1,4 +1,4 @@
-.PHONY: vendor_clean vendor_update vendor_sync install build doc fmt lint test vet godep bench
+.PHONY: vendor_clean vendor_fetch vendor_update vendor_sync install build doc fmt lint test vet godep bench
 
 PKG_NAME=$(shell basename `pwd`)
 
@@ -6,6 +6,9 @@ default: install
 
 vendor_clean:
 	govendor remove +u
+
+vendor_fetch:
+	govendor fetch +out
 
 vendor_update:
 	govendor update +vendor
