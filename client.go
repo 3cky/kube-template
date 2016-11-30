@@ -19,12 +19,16 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/exec"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/openstack"
+	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -33,10 +37,12 @@ const (
 )
 
 type Client struct {
+	podLister  corelisters.PodLister
 	kubeClient kubernetes.Interface
 }
 
-func newClient(cfg *Config) (*Client, error) {
+
+func newClient(cfg *Config, stopCh chan struct{}) (*Client, error) {
 	var config *rest.Config
 	if cfg.GuessKubeAPISettings {
 		var err error
@@ -59,24 +65,54 @@ func newClient(cfg *Config) (*Client, error) {
 			Host: host,
 		}
 	}
+
 	c, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Client{
+	cl := &Client{
 		kubeClient: c,
-	}, nil
+	}
+
+	informerFactory := informers.NewSharedInformerFactory(c, 0)
+
+	podInformer := informerFactory.Core().V1().Pods()
+
+	podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			glog.V(4).Infof("added pod:\n%q", obj)
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			glog.V(4).Infof("updated pod, old:\n%q,\nnew:\n%q", oldObj, newObj)
+		},
+		DeleteFunc: func(obj interface{}) {
+			glog.V(4).Infof("deleted pod:\n%q", obj)
+		},
+	})
+
+	cl.podLister = podInformer.Lister()
+
+	go podInformer.Informer().Run(stopCh)
+
+	return cl, nil
 }
 
 func (c *Client) Pods(namespace, selector string) ([]corev1.Pod, error) {
 	glog.V(4).Infof("fetching pods, namespace: %q, selector: %q", namespace, selector)
-	options := metav1.ListOptions{LabelSelector: selector}
-	podList, err := c.kubeClient.CoreV1().Pods(namespace).List(options)
+	s, err := labels.Parse(selector)
 	if err != nil {
 		return nil, err
 	}
-	return podList.Items, nil
+	pl, err := c.podLister.Pods(namespace).List(s)
+	if err != nil {
+		return nil, err
+	}
+	var podList []corev1.Pod
+	for _, p := range pl {
+		podList = append(podList, *p)
+	}
+	return podList, nil
 }
 
 func (c *Client) Services(namespace, selector string) ([]corev1.Service, error) {

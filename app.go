@@ -24,9 +24,9 @@ import (
 
 type App struct {
 	// Stop channel
-	stopCh chan interface{}
+	stopCh chan struct{}
 	// Done channel
-	doneCh chan interface{}
+	doneCh chan struct{}
 
 	// Application config
 	config *Config
@@ -46,11 +46,11 @@ func newApp(cfg *Config) (*App, error) {
 		config: cfg,
 	}
 
-	app.stopCh = make(chan interface{})
-	app.doneCh = make(chan interface{})
+	app.stopCh = make(chan struct{})
+	app.doneCh = make(chan struct{})
 
 	// Create Kubernetes client
-	c, err := newClient(cfg)
+	c, err := newClient(cfg, app.stopCh)
 	if err != nil {
 		return nil, err
 	}
