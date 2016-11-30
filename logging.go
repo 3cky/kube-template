@@ -29,6 +29,8 @@ import (
 var logFlushFreq = pflag.Duration("log-flush-frequency", 5*time.Second, "Maximum number of seconds between log flushes")
 
 func init() {
+	// Trick to avoid 'logging before flag.Parse' warning
+	flag.CommandLine.Parse([]string{})
 	flag.Set("logtostderr", "true")
 }
 
