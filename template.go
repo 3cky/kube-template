@@ -156,6 +156,7 @@ func funcMap(dm *DependencyManager) gotemplate.FuncMap {
 		// Utils
 		"add": add,
 		"sub": sub,
+		"mul": mul,
 	}
 }
 
@@ -275,4 +276,9 @@ func add(a, b int) int {
 // {{sub a b}}
 func sub(a, b int) int {
 	return a - b
+}
+
+// {{mul a b}}
+func mul(a, b int) int {
+	return a * b
 }

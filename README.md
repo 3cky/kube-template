@@ -156,6 +156,12 @@ Returns the sum of two integers, `a` and `b`.
 ```
 Returns the subtract of integer `b` from integer `a`.
 
+##### `mul`
+```
+{{mul a b}}
+```
+Returns the multiplication of integer `a` by integer `b`.
+
 ### EXAMPLES
 **To be done.**
 
