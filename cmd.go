@@ -15,6 +15,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -91,7 +92,7 @@ func runCmd(cmd *cobra.Command, _ []string) {
 			return nil, err
 		}
 		if len(config.TemplateDescriptors) == 0 {
-			return nil, fmt.Errorf("no templates to process")
+			return nil, errors.New("no templates to process")
 		}
 		return config, nil
 	}
@@ -127,10 +128,10 @@ func runCmd(cmd *cobra.Command, _ []string) {
 EventLoop:
 	for {
 		select {
-		case signal := <-signalCh:
-			switch signal {
+		case sig := <-signalCh:
+			switch sig {
 			case syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-				glog.V(2).Infof("received %v signal...", signal)
+				glog.V(2).Infof("received %v signal...", sig)
 				// Stop templates processing and exit
 				app.Stop()
 				select {
@@ -138,7 +139,7 @@ EventLoop:
 					break EventLoop
 				}
 			case syscall.SIGHUP:
-				glog.V(2).Infof("received %v signal, reloading config", signal)
+				glog.V(2).Infof("received %v signal, reloading config", sig)
 				config, err := getConfig()
 				if err != nil {
 					glog.Errorf("config reloading error: %v", err)
