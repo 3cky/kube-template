@@ -163,7 +163,36 @@ Returns the subtract of integer `b` from integer `a`.
 Returns the multiplication of integer `a` by integer `b`.
 
 ### EXAMPLES
-**To be done.**
+Populate nginx upstream with pods labeled 'name=test-pod':
+```
+upstream test-pod-upstream {
+{{with $pods := pods "name=test-pod"}}
+    ip_hash;
+    {{range $pods}}
+    server {{.Status.PodIP}}:8080;
+    {{end}}
+{{else}}
+    # No pods with given label were found, use stub server
+    server 127.0.0.1:8081;
+{{end}}
+}
+```
+
+Create haproxy TCP balancer for pods listening on container port 9000:
+```
+{{with $pods := pods "name=test-pod"}}
+{{$maxconn := 1000}}
+listen test-pod-balancer
+    bind *:9000
+    mode tcp
+    maxconn {{mul $maxconn (len $pods)}}
+    balance roundrobin
+    {{range $pods}}
+    server {{.Name}} {{.Status.PodIP}}:9000 maxconn {{$maxconn}} check inter 5000 rise 3 fall 3
+    {{end}}
+    server stub 127.0.0.1:7690 backup
+{{end}}
+```
 
 ### TODO
 * Track Kubernetes changes using resource watch API
