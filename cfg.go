@@ -58,22 +58,32 @@ type TemplateDescriptor struct {
 	Command string
 }
 
-func readConfig(cmd *cobra.Command) {
-	if cfgFile != "" { // enable ability to specify config file via flag
-		viper.SetConfigFile(cfgFile)
+func readConfig(cmd *cobra.Command) error {
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile) // specify config file set by flag
+	} else {
+		viper.SetConfigName(CFG_FILE) // default name of config file (without extension)
+		viper.AddConfigPath(".")      // adding home directory as first search path
 	}
 
-	viper.SetConfigName(CFG_FILE) // name of config file (without extension)
-	viper.AddConfigPath(".")      // adding home directory as first search path
-	viper.AutomaticEnv()          // read in environment variables that match
+	viper.AutomaticEnv() // read in environment variables that match
 
 	viper.BindPFlag(CFG_MASTER, cmd.Flags().Lookup(FLAG_MASTER))
 	viper.BindPFlag(CFG_POLL_TIME, cmd.Flags().Lookup(FLAG_POLL_TIME))
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
+	err := viper.ReadInConfig()
+
+	if err == nil {
 		glog.V(1).Infof("using config file: %s", viper.ConfigFileUsed())
+		return nil
 	}
+
+	// raise error if config file used but can't be read
+	if viper.ConfigFileUsed() != "" {
+		return err
+	}
+
+	return nil
 }
 
 // Parses a string in format 'templatePath:outputPath[:command]' into a TemplateDescriptor struct
@@ -116,7 +126,10 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 	}
 	config.RunOnce = runOnce
 	// Read config from file, if present
-	readConfig(cmd)
+	err = readConfig(cmd)
+	if err != nil {
+		return nil, err
+	}
 	// Get command line / config options
 	config.Master = viper.GetString(CFG_MASTER)
 	config.PollTime = viper.GetDuration(CFG_POLL_TIME)
