@@ -12,7 +12,7 @@ Installation
 - For Go 1.5 make sure you have set **GO15VENDOREXPERIMENT=1** environment variable (set by default in Go 1.6)
 - `git pull https://github.com/3cky/kube-template.git`
 - `cd kube-template`
-- make install
+- `make install`
 
 Usage
 -----
@@ -20,23 +20,23 @@ Usage
 ### Options
 
 ```
-      --alsologtostderr[=false]: log to standard error as well as files
-  -c, --config="": config file (default is ./kube-template.(yaml|json))
-      --dry-run[=false]: don't write template output, dump result to stdout
-      --help-md[=false]: get help in Markdown format
-      --log-backtrace-at=:0: when logging hits line file:N, emit a stack trace
-      --log-dir="": If non-empty, write log files in this directory
-      --log-flush-frequency=5s: Maximum number of seconds between log flushes
-      --logtostderr[=true]: log to standard error instead of files
-      --master="": Kubernetes API server address (default is http://127.0.0.1:8080/)
-      --once[=false]: run template processing once and exit
-  -p, --poll-time=15s: Kubernetes API server poll time
-      --stderrthreshold=2: logs at or above this threshold go to stderr
-  -t, --template=[]: adds a new template to watch on disk in the format
+      --alsologtostderr                  log to standard error as well as files
+  -c, --config string                    config file (default is ./kube-template.(yaml|json))
+      --dry-run                          don't write template output, dump result to stdout
+      --help-md                          get help in Markdown format
+      --log-backtrace-at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
+      --log-dir string                   If non-empty, write log files in this directory
+      --log-flush-frequency duration     Maximum number of seconds between log flushes (default 5s)
+      --logtostderr                      log to standard error instead of files (default true)
+      --master string                    Kubernetes API server address (default is http://127.0.0.1:8080/)
+      --once                             run template processing once and exit
+  -p, --poll-time duration               Kubernetes API server poll time (0 disables server polling) (default 15s)
+      --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
+  -t, --template stringSlice             adds a new template to watch on disk in the format
 		'templatePath:outputPath[:command]'. This option is additive
 		and may be specified multiple times for multiple templates
-      --v=0: log level for V logs
-      --vmodule=: comma-separated list of pattern=N settings for file-filtered logging
+  -v, --v Level                          log level for V logs
+      --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### Command Line
@@ -70,12 +70,12 @@ $ kube-template \
  poll-time: 10s
  
  templates:
-   - path: in1.tmpl
-     output: out1.txt
-     command: action1.sh
-   - path: in1.tmpl
-     output: out2.txt
-   - path: incomplete1.tmpl
+   - path: in.txt.tmpl
+     output: out.txt
+     command: action.sh
+
+   - path: in.html.tmpl
+     output: out.html
 ```
 
 ___Please note___: templates specified on the command line take precedence over those defined in a config file.
@@ -95,7 +95,7 @@ ___Please note___: templates specified on the command line take precedence over 
 ```
 {{pods "selector" "namespace"}}
 ```
-Query Kubernetes API server for [pods](https://github.com/kubernetes/kubernetes/blob/master/docs/user-guide/pods.md) from given `namespace` (`default` if not specified) matching given `selector` (empty to get all pods).
+Query Kubernetes API server for [pods](https://kubernetes.io/docs/user-guide/pods/) from given `namespace` (`default` if not specified) matching given `selector` (empty to get all pods).
  
 Example:
 ```
@@ -108,13 +108,13 @@ Example:
 ```
 {{services "selector" "namespace"}}
 ```
-Query Kubernetes API server for [services](https://github.com/kubernetes/kubernetes/blob/master/docs/user-guide/services.md) from given `namespace` (`default` if not specified) matching given `selector` (empty to get all services). 
+Query Kubernetes API server for [services](https://kubernetes.io/docs/user-guide/services/) from given `namespace` (`default` if not specified) matching given `selector` (empty to get all services).
 
 ##### `replicationcontrollers`
 ```
 {{replicationcontrollers "selector" "namespace"}}
 ```
-Query Kubernetes API server for [replication controllers](https://github.com/kubernetes/kubernetes/blob/master/docs/user-guide/replication-controller.md) from given `namespace` (`default` if not specified) matching given `selector` (empty to get all replication controllers). 
+Query Kubernetes API server for [replication controllers](https://kubernetes.io/docs/user-guide/replication-controller/) from given `namespace` (`default` if not specified) matching given `selector` (empty to get all replication controllers).
 
 ##### `events`
 ```
