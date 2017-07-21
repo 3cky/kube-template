@@ -14,6 +14,14 @@ Installation
 - `cd kube-template`
 - `make install`
 
+Docker
+If you want to create a Docker image
+- adjust Dockerfile in contrib/docker directory to fit your needs
+- configure settings files in contrib/docker/conf directory
+- issue `make docker`
+
+Note - the built image is already configured to automatically locate Kubernetes API along with everything is needed to connect (e.g. Certificate Authority file, security token and so on). 
+
 Usage
 -----
 
@@ -23,6 +31,7 @@ Usage
       --alsologtostderr                  log to standard error as well as files
   -c, --config string                    config file (default is ./kube-template.(yaml|json))
       --dry-run                          don't write template output, dump result to stdout
+      --guess-kube-api-settings          guess Kubernetes API settings from POD environment
       --help-md                          get help in Markdown format
       --log-backtrace-at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log-dir string                   If non-empty, write log files in this directory
