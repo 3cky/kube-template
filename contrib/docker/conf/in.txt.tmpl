@@ -1,0 +1,3 @@
+{{range pods "" "my-namespace"}}
+  {{.Name}} {{.Status.PodIP}}
+{{end}}

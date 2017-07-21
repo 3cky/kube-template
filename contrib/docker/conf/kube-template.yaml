@@ -1,0 +1,5 @@
+poll-time: 10s
+
+templates:
+  - path: /etc/kube-templates/in.txt.tmpl
+    output: /var/lib/kube-templates/out.txt

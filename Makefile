@@ -1,6 +1,9 @@
 .PHONY: vendor_clean vendor_fetch vendor_update vendor_sync install build doc fmt lint test vet godep bench
 
 PKG_NAME=$(shell basename `pwd`)
+TARGET_OS="linux"
+CONTAINER_NAME=$(shell grep "FROM " contrib/docker/Dockerfile | sed 's/FROM \(.*\).*\:.*/\1/')
+CONTAINER_VERSION=$(shell grep "FROM " contrib/docker/Dockerfile | sed 's/FROM .*\:\(.*\).*/\1/')
 
 default: install
 
@@ -21,6 +24,14 @@ install: vendor_sync
 
 build: vendor_sync
 	go build -v -o ./bin/$(PKG_NAME)
+
+docker: docker_build docker_container
+
+docker_container:
+	docker build -t $(CONTAINER_NAME)-kube-template:$(CONTAINER_VERSION) ./contrib/docker
+
+docker_build:
+	CGO_ENABLED=0 GOOS=$(TARGET_OS) go build -a -installsuffix cgo -v -o ./contrib/docker/bin/$(PKG_NAME)
 
 clean: vendor_clean
 	rm -dRf ./bin
