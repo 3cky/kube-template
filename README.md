@@ -15,6 +15,7 @@ Installation
 - `make install`
 
 Docker
+
 If you want to create a Docker image
 - adjust Dockerfile in contrib/docker directory to fit your needs
 - configure settings files in contrib/docker/conf directory
