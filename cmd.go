@@ -40,6 +40,7 @@ const (
 	FLAG_POLL_TIME = "poll-time"
 	FLAG_TEMPLATE  = "template"
 	FLAG_HELP_MD   = "help-md"
+        FLAG_GUESS_KUBE_API_SETTINGS = "guess-kube-api-settings"
 )
 
 func newCmd() *cobra.Command {
@@ -57,6 +58,7 @@ func initCmd(cmd *cobra.Command) {
 	f := cmd.Flags()
 	f.Bool(FLAG_DRY_RUN, false, "don't write template output, dump result to stdout")
 	f.Bool(FLAG_RUN_ONCE, false, "run template processing once and exit")
+	f.Bool(FLAG_GUESS_KUBE_API_SETTINGS, false, "guess Kubernetes API settings from POD environment")
 	f.String(FLAG_MASTER, "", fmt.Sprintf("Kubernetes API server address (default is %s)", DEFAULT_MASTER_HOST))
 	f.DurationP(FLAG_POLL_TIME, "p", 15*time.Second, "Kubernetes API server poll time (0 disables server polling)")
 	f.StringVarP(&cfgFile, FLAG_CONFIG, "c", "", fmt.Sprintf("config file (default is ./%s.(yaml|json))", CFG_FILE))
