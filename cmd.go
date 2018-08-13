@@ -33,14 +33,14 @@ import (
 )
 
 const (
-	FLAG_RUN_ONCE  = "once"
-	FLAG_DRY_RUN   = "dry-run"
-	FLAG_MASTER    = "master"
-	FLAG_CONFIG    = "config"
-	FLAG_POLL_TIME = "poll-time"
-	FLAG_TEMPLATE  = "template"
-	FLAG_HELP_MD   = "help-md"
-        FLAG_GUESS_KUBE_API_SETTINGS = "guess-kube-api-settings"
+	FLAG_RUN_ONCE                = "once"
+	FLAG_DRY_RUN                 = "dry-run"
+	FLAG_MASTER                  = "master"
+	FLAG_CONFIG                  = "config"
+	FLAG_POLL_TIME               = "poll-time"
+	FLAG_TEMPLATE                = "template"
+	FLAG_HELP_MD                 = "help-md"
+	FLAG_GUESS_KUBE_API_SETTINGS = "guess-kube-api-settings"
 )
 
 func newCmd() *cobra.Command {

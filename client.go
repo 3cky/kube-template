@@ -30,22 +30,22 @@ type Client struct {
 }
 
 func newClient(cfg *Config) (*Client, error) {
-        var config = new (rest.Config)
-        if cfg.GuessKubeAPISettings {
-           var err error
-           config, err = rest.InClusterConfig()
-	   if err != nil {
-		return nil, err
-	   }
-        } else {
-	    host := DEFAULT_MASTER_HOST
-	    if cfg.Master != "" {
-		host = cfg.Master
-	    }
-	    config = &rest.Config{
-		Host: host,
-	    }
-        }
+	var config = new(rest.Config)
+	if cfg.GuessKubeAPISettings {
+		var err error
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		host := DEFAULT_MASTER_HOST
+		if cfg.Master != "" {
+			host = cfg.Master
+		}
+		config = &rest.Config{
+			Host: host,
+		}
+	}
 	c, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
