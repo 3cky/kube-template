@@ -15,10 +15,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"time"
 
-	"fmt"
 	"github.com/golang/glog"
 )
 

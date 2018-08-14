@@ -34,6 +34,7 @@ Usage
       --dry-run                          don't write template output, dump result to stdout
       --guess-kube-api-settings          guess Kubernetes API settings from POD environment
       --help-md                          get help in Markdown format
+  -k, --kube-config string               Kubernetes config file to use
       --log-backtrace-at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log-dir string                   If non-empty, write log files in this directory
       --log-flush-frequency duration     Maximum number of seconds between log flushes (default 5s)

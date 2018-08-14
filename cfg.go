@@ -39,6 +39,8 @@ type Config struct {
 	RunOnce bool
 	// Guess Kubernetes API settings from POD environment
 	GuessKubeAPISettings bool
+	// Kubernetes config file
+	KubeConfig string
 	// Kubernetes API server address
 	Master string
 	// Kubernetes API server poll time
@@ -132,6 +134,11 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 		return nil, err
 	}
 	config.GuessKubeAPISettings = guessKubeAPISettings
+	kubeConfig, err := cmd.Flags().GetString(FLAG_KUBE_CONFIG)
+	if err != nil {
+		return nil, err
+	}
+	config.KubeConfig = kubeConfig
 
 	// Read config from file, if present
 	err = readConfig(cmd)

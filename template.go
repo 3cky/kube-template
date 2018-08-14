@@ -16,17 +16,19 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
+
 	gotemplate "text/template"
 
-	"fmt"
-	api "k8s.io/client-go/pkg/api/v1"
-	"os"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
-	DEFAULT_NAMESPACE = api.NamespaceDefault
+	DEFAULT_NAMESPACE = metav1.NamespaceDefault
 	DEFAULT_SELECTOR  = ""
 )
 
@@ -192,8 +194,8 @@ func parseNamespaceSelector(s ...string) (string, string, error) {
 }
 
 // {{pods "selector" "namespace"}}
-func pods(dm *DependencyManager) func(...string) ([]api.Pod, error) {
-	return func(s ...string) ([]api.Pod, error) {
+func pods(dm *DependencyManager) func(...string) ([]corev1.Pod, error) {
+	return func(s ...string) ([]corev1.Pod, error) {
 		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
 			return dm.Pods(namespace, selector)
 		} else {
@@ -203,8 +205,8 @@ func pods(dm *DependencyManager) func(...string) ([]api.Pod, error) {
 }
 
 // {{services "selector" "namespace"}}
-func services(dm *DependencyManager) func(...string) ([]api.Service, error) {
-	return func(s ...string) ([]api.Service, error) {
+func services(dm *DependencyManager) func(...string) ([]corev1.Service, error) {
+	return func(s ...string) ([]corev1.Service, error) {
 		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
 			return dm.Services(namespace, selector)
 		} else {
@@ -214,8 +216,8 @@ func services(dm *DependencyManager) func(...string) ([]api.Service, error) {
 }
 
 // {{replicationcontrollers "selector" "namespace"}}
-func replicationcontrollers(dm *DependencyManager) func(...string) ([]api.ReplicationController, error) {
-	return func(s ...string) ([]api.ReplicationController, error) {
+func replicationcontrollers(dm *DependencyManager) func(...string) ([]corev1.ReplicationController, error) {
+	return func(s ...string) ([]corev1.ReplicationController, error) {
 		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
 			return dm.ReplicationControllers(namespace, selector)
 		} else {
@@ -225,8 +227,8 @@ func replicationcontrollers(dm *DependencyManager) func(...string) ([]api.Replic
 }
 
 // {{events "selector" "namespace"}}
-func events(dm *DependencyManager) func(...string) ([]api.Event, error) {
-	return func(s ...string) ([]api.Event, error) {
+func events(dm *DependencyManager) func(...string) ([]corev1.Event, error) {
+	return func(s ...string) ([]corev1.Event, error) {
 		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
 			return dm.Events(namespace, selector)
 		} else {
@@ -236,8 +238,8 @@ func events(dm *DependencyManager) func(...string) ([]api.Event, error) {
 }
 
 // {{endpoints "selector" "namespace"}}
-func endpoints(dm *DependencyManager) func(...string) ([]api.Endpoints, error) {
-	return func(s ...string) ([]api.Endpoints, error) {
+func endpoints(dm *DependencyManager) func(...string) ([]corev1.Endpoints, error) {
+	return func(s ...string) ([]corev1.Endpoints, error) {
 		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
 			return dm.Endpoints(namespace, selector)
 		} else {
@@ -247,8 +249,8 @@ func endpoints(dm *DependencyManager) func(...string) ([]api.Endpoints, error) {
 }
 
 // {{nodes "selector"}}
-func nodes(dm *DependencyManager) func(...string) ([]api.Node, error) {
-	return func(s ...string) ([]api.Node, error) {
+func nodes(dm *DependencyManager) func(...string) ([]corev1.Node, error) {
+	return func(s ...string) ([]corev1.Node, error) {
 		if selector, err := parseSelector(s...); err == nil {
 			return dm.Nodes(selector)
 		} else {
@@ -258,8 +260,8 @@ func nodes(dm *DependencyManager) func(...string) ([]api.Node, error) {
 }
 
 // {{namespaces "selector"}}
-func namespaces(dm *DependencyManager) func(...string) ([]api.Namespace, error) {
-	return func(s ...string) ([]api.Namespace, error) {
+func namespaces(dm *DependencyManager) func(...string) ([]corev1.Namespace, error) {
+	return func(s ...string) ([]corev1.Namespace, error) {
 		if selector, err := parseSelector(s...); err == nil {
 			return dm.Namespaces(selector)
 		} else {

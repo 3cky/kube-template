@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"sync"
 
-	api "k8s.io/client-go/pkg/api/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 type DependencyManager struct {
@@ -56,10 +56,10 @@ func (dm *DependencyManager) cacheDependency(key string, dep interface{}) {
 	dm.cachedDeps[key] = dep
 }
 
-func (dm *DependencyManager) Pods(namespace, selector string) ([]api.Pod, error) {
+func (dm *DependencyManager) Pods(namespace, selector string) ([]corev1.Pod, error) {
 	key := fmt.Sprintf("pods(%s,%s)", namespace, selector)
 	if value, found := dm.cachedDependency(key); found {
-		return value.([]api.Pod), nil
+		return value.([]corev1.Pod), nil
 	}
 	pods, err := dm.client.Pods(namespace, selector)
 	if err != nil {
@@ -69,10 +69,10 @@ func (dm *DependencyManager) Pods(namespace, selector string) ([]api.Pod, error)
 	return pods, nil
 }
 
-func (dm *DependencyManager) Services(namespace, selector string) ([]api.Service, error) {
+func (dm *DependencyManager) Services(namespace, selector string) ([]corev1.Service, error) {
 	key := fmt.Sprintf("services(%s,%s)", namespace, selector)
 	if value, found := dm.cachedDependency(key); found {
-		return value.([]api.Service), nil
+		return value.([]corev1.Service), nil
 	}
 	services, err := dm.client.Services(namespace, selector)
 	if err != nil {
@@ -82,10 +82,10 @@ func (dm *DependencyManager) Services(namespace, selector string) ([]api.Service
 	return services, nil
 }
 
-func (dm *DependencyManager) ReplicationControllers(namespace, selector string) ([]api.ReplicationController, error) {
+func (dm *DependencyManager) ReplicationControllers(namespace, selector string) ([]corev1.ReplicationController, error) {
 	key := fmt.Sprintf("replicationcontrollers(%s,%s)", namespace, selector)
 	if value, found := dm.cachedDependency(key); found {
-		return value.([]api.ReplicationController), nil
+		return value.([]corev1.ReplicationController), nil
 	}
 	rcs, err := dm.client.ReplicationControllers(namespace, selector)
 	if err != nil {
@@ -95,10 +95,10 @@ func (dm *DependencyManager) ReplicationControllers(namespace, selector string) 
 	return rcs, nil
 }
 
-func (dm *DependencyManager) Events(namespace, selector string) ([]api.Event, error) {
+func (dm *DependencyManager) Events(namespace, selector string) ([]corev1.Event, error) {
 	key := fmt.Sprintf("events(%s,%s)", namespace, selector)
 	if value, found := dm.cachedDependency(key); found {
-		return value.([]api.Event), nil
+		return value.([]corev1.Event), nil
 	}
 	evs, err := dm.client.Events(namespace, selector)
 	if err != nil {
@@ -108,10 +108,10 @@ func (dm *DependencyManager) Events(namespace, selector string) ([]api.Event, er
 	return evs, nil
 }
 
-func (dm *DependencyManager) Endpoints(namespace, selector string) ([]api.Endpoints, error) {
+func (dm *DependencyManager) Endpoints(namespace, selector string) ([]corev1.Endpoints, error) {
 	key := fmt.Sprintf("endpoints(%s,%s)", namespace, selector)
 	if value, found := dm.cachedDependency(key); found {
-		return value.([]api.Endpoints), nil
+		return value.([]corev1.Endpoints), nil
 	}
 	eps, err := dm.client.Endpoints(namespace, selector)
 	if err != nil {
@@ -121,10 +121,10 @@ func (dm *DependencyManager) Endpoints(namespace, selector string) ([]api.Endpoi
 	return eps, nil
 }
 
-func (dm *DependencyManager) Nodes(selector string) ([]api.Node, error) {
+func (dm *DependencyManager) Nodes(selector string) ([]corev1.Node, error) {
 	key := fmt.Sprintf("nodes(%s)", selector)
 	if value, found := dm.cachedDependency(key); found {
-		return value.([]api.Node), nil
+		return value.([]corev1.Node), nil
 	}
 	nodes, err := dm.client.Nodes(selector)
 	if err != nil {
@@ -134,10 +134,10 @@ func (dm *DependencyManager) Nodes(selector string) ([]api.Node, error) {
 	return nodes, nil
 }
 
-func (dm *DependencyManager) Namespaces(selector string) ([]api.Namespace, error) {
+func (dm *DependencyManager) Namespaces(selector string) ([]corev1.Namespace, error) {
 	key := fmt.Sprintf("namespaces(%s)", selector)
 	if value, found := dm.cachedDependency(key); found {
-		return value.([]api.Namespace), nil
+		return value.([]corev1.Namespace), nil
 	}
 	nss, err := dm.client.Namespaces(selector)
 	if err != nil {

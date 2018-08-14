@@ -15,6 +15,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -28,8 +29,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 	"github.com/spf13/pflag"
-
-	"bytes"
 )
 
 const (
@@ -41,6 +40,7 @@ const (
 	FLAG_TEMPLATE                = "template"
 	FLAG_HELP_MD                 = "help-md"
 	FLAG_GUESS_KUBE_API_SETTINGS = "guess-kube-api-settings"
+	FLAG_KUBE_CONFIG             = "kube-config"
 )
 
 func newCmd() *cobra.Command {
@@ -61,6 +61,7 @@ func initCmd(cmd *cobra.Command) {
 	f.Bool(FLAG_GUESS_KUBE_API_SETTINGS, false, "guess Kubernetes API settings from POD environment")
 	f.String(FLAG_MASTER, "", fmt.Sprintf("Kubernetes API server address (default is %s)", DEFAULT_MASTER_HOST))
 	f.DurationP(FLAG_POLL_TIME, "p", 15*time.Second, "Kubernetes API server poll time (0 disables server polling)")
+	f.StringP(FLAG_KUBE_CONFIG, "k", "", "Kubernetes config file to use")
 	f.StringVarP(&cfgFile, FLAG_CONFIG, "c", "", fmt.Sprintf("config file (default is ./%s.(yaml|json))", CFG_FILE))
 	f.StringSliceP(FLAG_TEMPLATE, "t", nil, `adds a new template to watch on disk in the format
 		'templatePath:outputPath[:command]'. This option is additive
