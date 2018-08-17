@@ -19,6 +19,11 @@ import (
 	"os"
 )
 
+var (
+	BuildVersion   = "unknown"
+	BuildTimestamp = "unknown"
+)
+
 func main() {
 	cmd := newCmd()
 	if err := cmd.Execute(); err != nil {

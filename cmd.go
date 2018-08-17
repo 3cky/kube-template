@@ -32,6 +32,7 @@ import (
 )
 
 const (
+	FLAG_VERSION                 = "version"
 	FLAG_RUN_ONCE                = "once"
 	FLAG_DRY_RUN                 = "dry-run"
 	FLAG_MASTER                  = "master"
@@ -56,6 +57,7 @@ func newCmd() *cobra.Command {
 func initCmd(cmd *cobra.Command) {
 	// Command-related flags set
 	f := cmd.Flags()
+	f.Bool(FLAG_VERSION, false, "display the version number and build timestamp")
 	f.Bool(FLAG_DRY_RUN, false, "don't write template output, dump result to stdout")
 	f.Bool(FLAG_RUN_ONCE, false, "run template processing once and exit")
 	f.Bool(FLAG_GUESS_KUBE_API_SETTINGS, false, "guess Kubernetes API settings from POD environment")
@@ -82,6 +84,12 @@ func initCmd(cmd *cobra.Command) {
 }
 
 func runCmd(cmd *cobra.Command, _ []string) {
+	if f, _ := cmd.Flags().GetBool(FLAG_VERSION); f {
+		fmt.Printf("Build version: %s\n", BuildVersion)
+		fmt.Printf("Build timestamp: %s\n", BuildTimestamp)
+		return
+	}
+
 	if f, _ := cmd.Flags().GetBool(FLAG_HELP_MD); f {
 		out := new(bytes.Buffer)
 		doc.GenMarkdown(cmd, out)

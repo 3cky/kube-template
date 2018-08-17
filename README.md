@@ -47,6 +47,7 @@ Usage
 		'templatePath:outputPath[:command]'. This option is additive
 		and may be specified multiple times for multiple templates
   -v, --v Level                          log level for V logs
+      --version                          display the version number and build timestamp
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
