@@ -25,6 +25,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 const (
@@ -155,10 +156,15 @@ func funcMap(dm *DependencyManager) gotemplate.FuncMap {
 		"endpoints":              endpoints(dm),
 		"nodes":                  nodes(dm),
 		"namespaces":             namespaces(dm),
-		// Utils
-		"add": add,
-		"sub": sub,
-		"mul": mul,
+		// Helper functions
+		"add":       add,
+		"sub":       sub,
+		"mul":       mul,
+		"env":       env,
+		"toLower":   strings.ToLower,
+		"toUpper":   strings.ToUpper,
+		"toTitle":   strings.Title,
+		"trimSpace": strings.TrimSpace,
 	}
 }
 
@@ -283,4 +289,9 @@ func sub(a, b int) int {
 // {{mul a b}}
 func mul(a, b int) int {
 	return a * b
+}
+
+// {{env "VAR"}}
+func env(k string) string {
+	return os.Getenv(k)
 }

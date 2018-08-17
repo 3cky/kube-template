@@ -174,6 +174,24 @@ Returns the subtract of integer `b` from integer `a`.
 ```
 Returns the multiplication of integer `a` by integer `b`.
 
+##### `env`
+```
+{{env "VAR"}}
+```
+Returns the VAR environment variable (or empty string if given variable is not present).
+
+##### `toLower`
+Returns the argument as string converted to lower case.
+
+##### `toUpper`
+Returns the argument as string converted to upper case.
+
+##### `toTitle`
+Returns the argument as string converted to title case.
+
+##### `trimSpace`
+Returns the argument as string with all leading and trailing white space removed.
+
 ### EXAMPLES
 Populate nginx upstream with pods labeled 'name=test-pod':
 ```
@@ -209,7 +227,6 @@ listen test-pod-balancer
 ### TODO
 * Track Kubernetes changes using resource watch API
 * More API and helper template functions
-* Add options for API server authentication
 * Add tests
 
 ## Contributing
