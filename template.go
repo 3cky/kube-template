@@ -23,9 +23,10 @@ import (
 
 	gotemplate "text/template"
 
+	"strings"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 )
 
 const (
@@ -47,7 +48,7 @@ type Template struct {
 	lastOutput string
 }
 
-func newTemplate(dm *DependencyManager, d *TemplateDescriptor) (*Template, error) {
+func newTemplate(dm *DependencyManager, d *TemplateDescriptor, cfg *Config) (*Template, error) {
 	// Template name
 	name := filepath.Base(d.Path)
 	// Get last template output, if present
@@ -62,7 +63,7 @@ func newTemplate(dm *DependencyManager, d *TemplateDescriptor) (*Template, error
 	}
 	s := string(data)
 	// Create Go template from read data
-	template, err := gotemplate.New(name).Funcs(funcMap(dm)).Parse(s)
+	template, err := gotemplate.New(name).Delims(cfg.LeftDelimiter, cfg.RightDelimiter).Funcs(funcMap(dm)).Parse(s)
 	if err != nil {
 		return nil, err
 	}

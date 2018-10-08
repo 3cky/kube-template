@@ -62,7 +62,7 @@ func newApp(cfg *Config) (*App, error) {
 	// Add all configured templates
 	app.templates = make([]*Template, 0, len(cfg.TemplateDescriptors))
 	for _, d := range cfg.TemplateDescriptors {
-		t, err := newTemplate(app.dm, d)
+		t, err := newTemplate(app.dm, d, cfg)
 		if err != nil {
 			return nil, err
 		}
