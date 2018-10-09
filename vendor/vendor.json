@@ -19,6 +19,20 @@
 			"revision": ""
 		},
 		{
+			"checksumSHA1": "TgO9gc7JIrSnT/T/VVzihTVPtvU=",
+			"path": "github.com/Masterminds/semver",
+			"revision": "c84ddcca87bf5a941b138dde832a7e20b0159ad8",
+			"revisionTime": "2018-08-07T14:24:31Z"
+		},
+		{
+			"checksumSHA1": "cULNu89EKumcxuNj+bhpowzZwcA=",
+			"path": "github.com/Masterminds/sprig",
+			"revision": "15f9564e7e9cf0da02a48e0d25f12a7b83559aa6",
+			"revisionTime": "2018-09-14T00:13:42Z",
+			"version": "v2.16.0",
+			"versionExact": "v2.16.0"
+		},
+		{
 			"checksumSHA1": "NX4v3cbkXAJxFlrncqT9yEUBuoA=",
 			"path": "github.com/PuerkitoBio/purell",
 			"revision": "0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4",
@@ -29,6 +43,12 @@
 			"path": "github.com/PuerkitoBio/urlesc",
 			"revision": "5bd2802263f21d8788851d5305584c82a5c75d7e",
 			"revisionTime": "2016-07-26T15:08:25Z"
+		},
+		{
+			"checksumSHA1": "X0xGt0e0IkZeviF+pFRlpHP+xkE=",
+			"path": "github.com/aokoli/goutils",
+			"revision": "3391d3790d23d03408670993e957e8f408993c34",
+			"revisionTime": "2017-05-31T11:00:25Z"
 		},
 		{
 			"checksumSHA1": "ntacCkWfMT63DaehXLG5FeXWyNM=",
@@ -163,6 +183,12 @@
 			"revisionTime": "2016-11-22T19:10:42Z"
 		},
 		{
+			"checksumSHA1": "yNyE9MrpDJQAxOxSipSIBgBhuNQ=",
+			"path": "github.com/google/uuid",
+			"revision": "9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8",
+			"revisionTime": "2018-09-17T14:00:05Z"
+		},
+		{
 			"checksumSHA1": "b7x/5HeWIHXwSRNED5Envt6tRjs=",
 			"path": "github.com/googleapis/gnostic/OpenAPIv2",
 			"revision": "48a0ecefe2e4190c7a2d63b477875854a2f993b3",
@@ -251,6 +277,12 @@
 			"path": "github.com/hashicorp/hcl/json/token",
 			"revision": "ef8a98b0bbce4a65b5aa4c368430a80ddc533168",
 			"revisionTime": "2018-04-04T17:41:02Z"
+		},
+		{
+			"checksumSHA1": "GgSlQYD/MBe2lqMqF6BP51d+67o=",
+			"path": "github.com/huandu/xstrings",
+			"revision": "8bbcf2f9ccb55755e748b7644164cd4bdce94c1d",
+			"revisionTime": "2018-09-06T15:17:51Z"
 		},
 		{
 			"checksumSHA1": "3LWNcQT7yTaLpEmjhI/3fi8puv0=",
@@ -401,6 +433,18 @@
 			"path": "github.com/ugorji/go/codec",
 			"revision": "faddd6128c66c4708f45fdc007f575f75e592a3c",
 			"revisionTime": "2016-09-28T01:52:44Z"
+		},
+		{
+			"checksumSHA1": "1MGpGDQqnUoRpv7VEcQrXOBydXE=",
+			"path": "golang.org/x/crypto/pbkdf2",
+			"revision": "e3636079e1a4c1f337f212cc5cd2aca108f6c900",
+			"revisionTime": "2018-09-26T22:24:25Z"
+		},
+		{
+			"checksumSHA1": "sx1nQShs40UKtcJZNJuvYtGesaI=",
+			"path": "golang.org/x/crypto/scrypt",
+			"revision": "e3636079e1a4c1f337f212cc5cd2aca108f6c900",
+			"revisionTime": "2018-09-26T22:24:25Z"
 		},
 		{
 			"checksumSHA1": "BGm8lKZmvJbf/YOJLeL1rw2WVjA=",

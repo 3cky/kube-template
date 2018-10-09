@@ -23,9 +23,12 @@ import (
 
 	gotemplate "text/template"
 
+	"strings"
+
+	"github.com/Masterminds/sprig"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 )
 
 const (
@@ -147,7 +150,7 @@ func (t *Template) Render() (string, error) {
 }
 
 func funcMap(dm *DependencyManager) gotemplate.FuncMap {
-	return gotemplate.FuncMap{
+	f := gotemplate.FuncMap{
 		// Kubernetes objects
 		"pods":                   pods(dm),
 		"services":               services(dm),
@@ -166,6 +169,13 @@ func funcMap(dm *DependencyManager) gotemplate.FuncMap {
 		"toTitle":   strings.Title,
 		"trimSpace": strings.TrimSpace,
 	}
+
+	// Sprig helper functions
+	for k, v := range sprig.FuncMap() {
+		f[k] = v
+	}
+
+	return f
 }
 
 // Parse template tag with max 1 argument - selector
