@@ -83,10 +83,8 @@ func (app *App) Start() {
 	app.Run()
 
 	if app.config.PollTime.Nanoseconds() <= 0 {
-		select {
-		case <-app.stopCh:
-			return
-		}
+		<-app.stopCh
+		return
 	}
 
 	for {

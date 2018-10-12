@@ -1,0 +1,25 @@
+language: go
+
+go:
+  - 1.10.x
+  - 1.11.x
+
+git:
+  depth: 1
+
+matrix:
+  allow_failures:
+    - go: master
+  fast_finish: true
+
+install:
+
+notifications:
+  email: false
+
+before_script:
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.10.2
+
+script:
+  - golangci-lint run
+  - make build

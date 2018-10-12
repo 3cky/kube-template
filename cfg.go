@@ -72,8 +72,13 @@ func readConfig(cmd *cobra.Command) error {
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	viper.BindPFlag(CFG_MASTER, cmd.Flags().Lookup(FLAG_MASTER))
-	viper.BindPFlag(CFG_POLL_TIME, cmd.Flags().Lookup(FLAG_POLL_TIME))
+	if err := viper.BindPFlag(CFG_MASTER, cmd.Flags().Lookup(FLAG_MASTER)); err != nil {
+		return err
+	}
+
+	if err := viper.BindPFlag(CFG_POLL_TIME, cmd.Flags().Lookup(FLAG_POLL_TIME)); err != nil {
+		return err
+	}
 
 	err := viper.ReadInConfig()
 

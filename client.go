@@ -33,7 +33,7 @@ type Client struct {
 }
 
 func newClient(cfg *Config) (*Client, error) {
-	var config = new(rest.Config)
+	var config *rest.Config
 	if cfg.GuessKubeAPISettings {
 		var err error
 		config, err = rest.InClusterConfig()

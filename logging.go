@@ -30,8 +30,10 @@ var logFlushFreq = pflag.Duration("log-flush-frequency", 5*time.Second, "Maximum
 
 func init() {
 	// Trick to avoid 'logging before flag.Parse' warning
-	flag.CommandLine.Parse([]string{})
-	flag.Set("logtostderr", "true")
+	if err := flag.CommandLine.Parse([]string{}); err != nil {
+		return
+	}
+	_ = flag.Set("logtostderr", "true")
 }
 
 // GlogWriter serves as a bridge between the standard log package and the glog package.

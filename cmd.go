@@ -92,7 +92,10 @@ func runCmd(cmd *cobra.Command, _ []string) {
 
 	if f, _ := cmd.Flags().GetBool(FLAG_HELP_MD); f {
 		out := new(bytes.Buffer)
-		doc.GenMarkdown(cmd, out)
+		if err := doc.GenMarkdown(cmd, out); err != nil {
+			fmt.Printf("can't generate help in markdown format: %v", err)
+			return
+		}
 		fmt.Println(out)
 		return
 	}
@@ -138,39 +141,32 @@ func runCmd(cmd *cobra.Command, _ []string) {
 	// Event loop
 EventLoop:
 	for {
-		select {
-		case sig := <-signalCh:
-			switch sig {
-			case syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-				glog.V(2).Infof("received %v signal...", sig)
-				// Stop templates processing and exit
-				app.Stop()
-				select {
-				case <-app.doneCh:
-					break EventLoop
-				}
-			case syscall.SIGHUP:
-				glog.V(2).Infof("received %v signal, reloading config", sig)
-				config, err := getConfig()
-				if err != nil {
-					glog.Errorf("config reloading error: %v", err)
-					continue
-				}
-				newApp, err := newApp(config)
-				if err != nil {
-					glog.Errorf("reloaded config couldn't be used: %v", err)
-					continue
-				}
-				// Stop templates processing using current config
-				app.Stop()
-				select {
-				case <-app.doneCh:
-					// Start templates processing using new config
-					app = newApp
-					go app.Start()
-
-				}
+		sig := <-signalCh
+		switch sig {
+		case syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
+			glog.V(2).Infof("received %v signal...", sig)
+			// Stop templates processing and exit
+			app.Stop()
+			<-app.doneCh
+			break EventLoop
+		case syscall.SIGHUP:
+			glog.V(2).Infof("received %v signal, reloading config", sig)
+			config, err := getConfig()
+			if err != nil {
+				glog.Errorf("config reloading error: %v", err)
+				continue
 			}
+			newApp, err := newApp(config)
+			if err != nil {
+				glog.Errorf("reloaded config couldn't be used: %v", err)
+				continue
+			}
+			// Stop templates processing using current config
+			app.Stop()
+			<-app.doneCh
+			// Start templates processing using new config
+			app = newApp
+			go app.Start()
 		}
 	}
 }
