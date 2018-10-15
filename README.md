@@ -3,7 +3,9 @@ kube-template
 
 Inspired by HashiCorp's [Consul Template][], `kube-template` is a utility that queries a [Kubernetes][] API server and uses its objects as input data for specified set of templates. Also it can run arbitrary commands for templates with updated output.
 
-**Please note this is work in progress.**
+**Please note this is a work in progress.**
+
+[![Build Status](https://travis-ci.org/3cky/kube-template.svg?branch=master)](https://travis-ci.org/3cky/kube-template)
 
 Installation
 ------------
