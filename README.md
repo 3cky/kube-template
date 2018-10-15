@@ -158,41 +158,7 @@ Query Kubernetes API server for namespaces matching given `selector` (empty to g
 
 #### Helper Functions
 
-##### `add`
-```
-{{add a b}}
-```
-Returns the sum of two integers, `a` and `b`.
-
-##### `sub`
-```
-{{sub a b}}
-```
-Returns the subtract of integer `b` from integer `a`.
-
-##### `mul`
-```
-{{mul a b}}
-```
-Returns the multiplication of integer `a` by integer `b`.
-
-##### `env`
-```
-{{env "VAR"}}
-```
-Returns the VAR environment variable (or empty string if given variable is not present).
-
-##### `toLower`
-Returns the argument as string converted to lower case.
-
-##### `toUpper`
-Returns the argument as string converted to upper case.
-
-##### `toTitle`
-Returns the argument as string converted to title case.
-
-##### `trimSpace`
-Returns the argument as string with all leading and trailing white space removed.
+All [Sprig library](http://masterminds.github.io/sprig/) template functions (string/math/date/etc) are supported (thanks @bpineau).
 
 ### EXAMPLES
 Populate nginx upstream with pods labeled 'name=test-pod':
