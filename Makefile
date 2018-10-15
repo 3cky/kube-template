@@ -47,10 +47,10 @@ doc:
 fmt:
 	go fmt ./...
 
-# https://github.com/golang/lint
-# go get github.com/golang/lint/golint
+# https://golangci.com/
+# curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.10.2
 lint:
-	golint ./...
+	golangci-lint run
 
 test:
 	go test ./...

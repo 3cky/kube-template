@@ -23,5 +23,4 @@ before_script:
   - make vendor_sync
 
 script:
-  - golangci-lint run
-  - make build
+  - make lint build
