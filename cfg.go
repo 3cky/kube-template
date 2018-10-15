@@ -46,6 +46,10 @@ type Config struct {
 	// Kubernetes API server poll time
 	PollTime time.Duration
 
+	// Template delimiters
+	LeftDelimiter  string
+	RightDelimiter string
+
 	// Template paths
 	templatePaths map[string]bool
 
@@ -144,6 +148,18 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 		return nil, err
 	}
 	config.KubeConfig = kubeConfig
+
+	leftDelimiter, err := cmd.Flags().GetString(FLAG_LEFT_DELIM)
+	if err != nil {
+		return nil, err
+	}
+	config.LeftDelimiter = leftDelimiter
+
+	rightDelimiter, err := cmd.Flags().GetString(FLAG_RIGHT_DELIM)
+	if err != nil {
+		return nil, err
+	}
+	config.RightDelimiter = rightDelimiter
 
 	// Read config from file, if present
 	err = readConfig(cmd)

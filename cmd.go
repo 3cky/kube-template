@@ -42,6 +42,8 @@ const (
 	FLAG_HELP_MD                 = "help-md"
 	FLAG_GUESS_KUBE_API_SETTINGS = "guess-kube-api-settings"
 	FLAG_KUBE_CONFIG             = "kube-config"
+	FLAG_LEFT_DELIM              = "left-delimiter"
+	FLAG_RIGHT_DELIM             = "right-delimiter"
 )
 
 func newCmd() *cobra.Command {
@@ -64,6 +66,8 @@ func initCmd(cmd *cobra.Command) {
 	f.String(FLAG_MASTER, "", fmt.Sprintf("Kubernetes API server address (default is %s)", DEFAULT_MASTER_HOST))
 	f.DurationP(FLAG_POLL_TIME, "p", 15*time.Second, "Kubernetes API server poll time (0 disables server polling)")
 	f.StringP(FLAG_KUBE_CONFIG, "k", "", "Kubernetes config file to use")
+	f.StringP(FLAG_LEFT_DELIM, "l", "{{", "templating left delimiter")
+	f.StringP(FLAG_RIGHT_DELIM, "r", "}}", "templating right delimiter")
 	f.StringVarP(&cfgFile, FLAG_CONFIG, "c", "", fmt.Sprintf("config file (default is ./%s.(yaml|json))", CFG_FILE))
 	f.StringSliceP(FLAG_TEMPLATE, "t", nil, `adds a new template to watch on disk in the format
 		'templatePath:outputPath[:command]'. This option is additive
