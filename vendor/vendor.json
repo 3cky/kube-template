@@ -3,18 +3,6 @@
 	"ignore": "test",
 	"package": [
 		{
-			"path": "appengine",
-			"revision": ""
-		},
-		{
-			"path": "appengine_internal",
-			"revision": ""
-		},
-		{
-			"path": "appengine_internal/base",
-			"revision": ""
-		},
-		{
 			"checksumSHA1": "j/0+O4eJ99Jrb9un/bwi5npLyOM=",
 			"path": "cloud.google.com/go/compute/metadata",
 			"revision": "5f0ffe7729373c98a5801de148565a893a0d2899",
@@ -425,8 +413,12 @@
 			"revisionTime": "2018-10-11T05:27:23Z"
 		},
 		{
+			"checksumSHA1": "3xyuaSNmClqG4YWC7g0isQIbUTc=",
 			"path": "golang.org/x/net/lex/httplex",
-			"revision": ""
+			"revision": "0ed95abb35c445290478a5348a7b38bb154135fd",
+			"revisionTime": "2018-01-24T06:08:02Z",
+			"version": "=release-branch.go1.10",
+			"versionExact": "release-branch.go1.10"
 		},
 		{
 			"checksumSHA1": "j0z/2h06wsvTkGiLaZ5XFLbMKfo=",
