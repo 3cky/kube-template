@@ -23,9 +23,12 @@ import (
 
 	gotemplate "text/template"
 
+	"strings"
+
+	"github.com/Masterminds/sprig"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 )
 
 const (
@@ -147,7 +150,7 @@ func (t *Template) Render() (string, error) {
 }
 
 func funcMap(dm *DependencyManager) gotemplate.FuncMap {
-	return gotemplate.FuncMap{
+	f := gotemplate.FuncMap{
 		// Kubernetes objects
 		"pods":                   pods(dm),
 		"services":               services(dm),
@@ -157,15 +160,18 @@ func funcMap(dm *DependencyManager) gotemplate.FuncMap {
 		"nodes":                  nodes(dm),
 		"namespaces":             namespaces(dm),
 		// Helper functions
-		"add":       add,
-		"sub":       sub,
-		"mul":       mul,
-		"env":       env,
 		"toLower":   strings.ToLower,
 		"toUpper":   strings.ToUpper,
 		"toTitle":   strings.Title,
 		"trimSpace": strings.TrimSpace,
 	}
+
+	// Sprig helper functions
+	for k, v := range sprig.FuncMap() {
+		f[k] = v
+	}
+
+	return f
 }
 
 // Parse template tag with max 1 argument - selector
@@ -274,24 +280,4 @@ func namespaces(dm *DependencyManager) func(...string) ([]corev1.Namespace, erro
 			return nil, err
 		}
 	}
-}
-
-// {{add a b}}
-func add(a, b int) int {
-	return a + b
-}
-
-// {{sub a b}}
-func sub(a, b int) int {
-	return a - b
-}
-
-// {{mul a b}}
-func mul(a, b int) int {
-	return a * b
-}
-
-// {{env "VAR"}}
-func env(k string) string {
-	return os.Getenv(k)
 }
