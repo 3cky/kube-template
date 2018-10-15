@@ -37,6 +37,7 @@ Usage
       --guess-kube-api-settings          guess Kubernetes API settings from POD environment
       --help-md                          get help in Markdown format
   -k, --kube-config string               Kubernetes config file to use
+  -l, --left-delimiter string            templating left delimiter (default "{{")
       --log-backtrace-at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log-dir string                   If non-empty, write log files in this directory
       --log-flush-frequency duration     Maximum number of seconds between log flushes (default 5s)
@@ -44,6 +45,7 @@ Usage
       --master string                    Kubernetes API server address (default is http://127.0.0.1:8080/)
       --once                             run template processing once and exit
   -p, --poll-time duration               Kubernetes API server poll time (0 disables server polling) (default 15s)
+  -r, --right-delimiter string           templating right delimiter (default "}}")
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -t, --template stringSlice             adds a new template to watch on disk in the format
 		'templatePath:outputPath[:command]'. This option is additive
