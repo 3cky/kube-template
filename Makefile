@@ -1,4 +1,4 @@
-.PHONY: vendor_clean vendor_fetch vendor_update vendor_sync install build doc fmt lint test vet godep bench
+.PHONY: vendor_install vendor_status vendor_update vendor_sync install build doc fmt lint test vet godep bench
 
 PKG_NAME=$(shell basename `pwd`)
 TARGET_OS="linux"
@@ -12,17 +12,17 @@ CONTAINER_VERSION=$(shell grep "FROM " contrib/docker/Dockerfile | sed 's/FROM .
 
 default: install
 
-vendor_clean:
-	govendor remove +u
+vendor_install:
+	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
-vendor_fetch:
-	govendor fetch +out
+vendor_status:
+	dep status
 
 vendor_update:
-	govendor update +vendor
+	dep ensure -update
 
 vendor_sync:
-	govendor sync -v
+	dep ensure
 
 install: vendor_sync
 	go get -x $(GOBUILD_VERSION_ARGS) -t -v ./...
@@ -38,7 +38,7 @@ docker_container:
 docker_build:
 	CGO_ENABLED=0 GOOS=$(TARGET_OS) go build -x $(GOBUILD_VERSION_ARGS) -a -installsuffix cgo -v -o ./contrib/docker/bin/$(PKG_NAME)
 
-clean: vendor_clean
+clean:
 	rm -dRf ./bin
 
 doc:
