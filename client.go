@@ -33,7 +33,7 @@ const (
 )
 
 type Client struct {
-	kubeClient *kubernetes.Clientset
+	kubeClient kubernetes.Interface
 }
 
 func newClient(cfg *Config) (*Client, error) {

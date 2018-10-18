@@ -29,6 +29,10 @@ import (
 var logFlushFreq = pflag.Duration("log-flush-frequency", 5*time.Second, "Maximum number of seconds between log flushes")
 
 func init() {
+	// Don't steal command line arguments from `go test`
+	if flag.Lookup("test.v") != nil {
+		return
+	}
 	// Trick to avoid 'logging before flag.Parse' warning
 	if err := flag.CommandLine.Parse([]string{}); err != nil {
 		return

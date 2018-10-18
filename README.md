@@ -196,7 +196,6 @@ listen test-pod-balancer
 ### TODO
 * Track Kubernetes changes using resource watch API
 * More API and helper template functions
-* Add tests
 
 ## Contributing
 

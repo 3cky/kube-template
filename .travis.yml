@@ -22,4 +22,4 @@ before_script:
   - make vendor_install vendor_sync
 
 script:
-  - make lint build
+  - make lint build test

@@ -1,0 +1,7 @@
+plain text: the quick brown fox jumps over the lazy dog
+
+helper math functions: 2+2={{add 2 2}}, 2-2={{sub 2 2}}, 2*2={{mul 2 2}}, 2/2={{div 2 2}}
+
+helper string functions: {{ "toUpper" | toUpper }}, {{ "toLower" | toLower }}, {{ "upper" | upper }}, {{ "LOWER" | lower }}
+
+pod names: {{range pods}}{{.Name}}{{end}}
