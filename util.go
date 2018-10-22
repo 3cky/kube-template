@@ -17,9 +17,11 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"syscall"
 	"time"
 
 	"github.com/golang/glog"
@@ -62,12 +64,12 @@ func Execute(command string, timeout time.Duration) error {
 	if err != nil {
 		return err
 	}
-	defer stdout.Close()
+	defer CloseQuietly(stdout)
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		return err
 	}
-	defer stderr.Close()
+	defer CloseQuietly(stderr)
 
 	// Start command execution
 	if err := cmd.Start(); err != nil {
@@ -117,4 +119,14 @@ func Execute(command string, timeout time.Duration) error {
 	case err := <-result:
 		return err
 	}
+}
+
+// Close given closer without error checking
+func CloseQuietly(closer io.Closer) {
+	_ = closer.Close()
+}
+
+// Unlink given file without error checking
+func UnlinkQuietly(path string) {
+	_ = syscall.Unlink(path)
 }

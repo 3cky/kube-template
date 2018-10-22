@@ -50,7 +50,7 @@ type Template struct {
 	lastOutput string
 }
 
-func newTemplate(dm *DependencyManager, d *TemplateDescriptor, cfg *Config) (*Template, error) {
+func newTemplate(cfg *Config, dm *DependencyManager, d *TemplateDescriptor) (*Template, error) {
 	// Template name
 	name := filepath.Base(d.Path)
 	// Get last template output, if present
@@ -76,6 +76,18 @@ func newTemplate(dm *DependencyManager, d *TemplateDescriptor, cfg *Config) (*Te
 		template:   template,
 		lastOutput: string(o),
 	}, nil
+}
+
+func newTemplatesFromConfig(cfg *Config, dm *DependencyManager) ([]*Template, error) {
+	templates := make([]*Template, 0, len(cfg.TemplateDescriptors))
+	for _, d := range cfg.TemplateDescriptors {
+		t, err := newTemplate(cfg, dm, d)
+		if err != nil {
+			return nil, err
+		}
+		templates = append(templates, t)
+	}
+	return templates, nil
 }
 
 func (t *Template) Process(dryRun bool) (bool, error) {
@@ -116,7 +128,7 @@ func (t *Template) Write(content []byte) error {
 		if f, err = ioutil.TempFile(dir, t.name); err != nil {
 			return err
 		}
-		defer os.Remove(f.Name())
+		defer UnlinkQuietly(f.Name())
 		// Write template output to temp file
 		if _, err := f.Write(content); err != nil {
 			return err

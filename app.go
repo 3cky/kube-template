@@ -28,11 +28,11 @@ type App struct {
 	// Done channel
 	doneCh chan struct{}
 
-	// Application config
-	config *Config
+	// Do not write template output flag
+	dryRun bool
 
-	// Kubernetes client
-	client *Client
+	// Template output update period
+	updatePeriod time.Duration
 
 	// Dependency manager
 	dm *DependencyManager
@@ -42,34 +42,34 @@ type App struct {
 }
 
 func newApp(cfg *Config) (*App, error) {
-	app := &App{
-		config: cfg,
-	}
-
-	app.stopCh = make(chan struct{})
-	app.doneCh = make(chan struct{})
 
 	// Create Kubernetes client
-	c, err := newClient(cfg, app.stopCh)
+	stopCh := make(chan struct{})
+	client, err := newClientForConfig(cfg, stopCh)
+	if err != nil {
+		close(stopCh)
+		return nil, err
+	}
+
+	// Create dependency manager
+	dm := newDependencyManager(client)
+
+	// Add all configured templates
+	templates, err := newTemplatesFromConfig(cfg, dm)
 	if err != nil {
 		return nil, err
 	}
-	app.client = c
 
-	// Create dependency manager
-	app.dm = newDependencyManager(c)
+	doneCh := make(chan struct{})
 
-	// Add all configured templates
-	app.templates = make([]*Template, 0, len(cfg.TemplateDescriptors))
-	for _, d := range cfg.TemplateDescriptors {
-		t, err := newTemplate(app.dm, d, cfg)
-		if err != nil {
-			return nil, err
-		}
-		app.templates = append(app.templates, t)
-	}
-
-	return app, nil
+	return &App{
+		stopCh:       stopCh,
+		doneCh:       doneCh,
+		dm:           dm,
+		templates:    templates,
+		dryRun:       cfg.DryRun,
+		updatePeriod: cfg.PollPeriod,
+	}, nil
 }
 
 func (app *App) Start() {
@@ -82,7 +82,7 @@ func (app *App) Start() {
 	// Initial templates processing run
 	app.Run()
 
-	if app.config.PollPeriod.Nanoseconds() <= 0 {
+	if app.updatePeriod.Nanoseconds() <= 0 {
 		<-app.stopCh
 		return
 	}
@@ -91,7 +91,7 @@ func (app *App) Start() {
 		select {
 		case <-app.stopCh:
 			return
-		case <-time.After(app.config.PollPeriod):
+		case <-time.After(app.updatePeriod):
 			app.Run()
 		}
 	}
@@ -111,9 +111,9 @@ func (app *App) Run() {
 	// Process templates
 	for _, t := range app.templates {
 		glog.V(2).Infof("processing template: %s", t.name)
-		if updated, err := t.Process(app.config.DryRun); err == nil {
+		if updated, err := t.Process(app.dryRun); err == nil {
 			if updated {
-				if !app.config.DryRun {
+				if !app.dryRun {
 					glog.V(2).Infof("template output updated: %s", t.name)
 				} else {
 					fmt.Printf("(dry-run) %s:\n%s", t.name, t.lastOutput)
@@ -142,7 +142,7 @@ func (app *App) Run() {
 	}
 	// Execute commands for templates
 	for _, cmd := range commands {
-		if !app.config.DryRun {
+		if !app.dryRun {
 			glog.V(4).Infof("executing: %q", cmd)
 			if err := Execute(cmd, time.Second); err == nil {
 				glog.V(4).Infof("executed: %q", cmd)

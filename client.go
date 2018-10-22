@@ -22,11 +22,11 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
+	corelisters "k8s.io/client-go/listers/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/exec"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/openstack"
-	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
@@ -41,8 +41,7 @@ type Client struct {
 	kubeClient kubernetes.Interface
 }
 
-
-func newClient(cfg *Config, stopCh chan struct{}) (*Client, error) {
+func newClientForConfig(cfg *Config, stopCh chan struct{}) (*Client, error) {
 	var config *rest.Config
 	if cfg.GuessKubeAPISettings {
 		var err error
@@ -71,10 +70,10 @@ func newClient(cfg *Config, stopCh chan struct{}) (*Client, error) {
 		return nil, err
 	}
 
-	cl := &Client{
-		kubeClient: c,
-	}
+	return newClient(c, stopCh)
+}
 
+func newClient(c kubernetes.Interface, stopCh chan struct{}) (*Client, error) {
 	informerFactory := informers.NewSharedInformerFactory(c, 0)
 
 	podInformer := informerFactory.Core().V1().Pods()
@@ -91,9 +90,12 @@ func newClient(cfg *Config, stopCh chan struct{}) (*Client, error) {
 		},
 	})
 
-	cl.podLister = podInformer.Lister()
-
 	go podInformer.Informer().Run(stopCh)
+
+	cl := &Client{
+		kubeClient: c,
+		podLister:  podInformer.Lister(),
+	}
 
 	return cl, nil
 }
