@@ -25,9 +25,10 @@ import (
 )
 
 const (
-	CFG_FILE      = "kube-template"
-	CFG_MASTER    = FLAG_MASTER
-	CFG_POLL_TIME = FLAG_POLL_TIME
+	CFG_FILE        = "kube-template"
+	CFG_MASTER      = FLAG_MASTER
+	CFG_POLL_TIME   = FLAG_POLL_TIME
+	CFG_POLL_PERIOD = FLAG_POLL_PERIOD
 )
 
 var cfgFile string
@@ -43,8 +44,8 @@ type Config struct {
 	KubeConfig string
 	// Kubernetes API server address
 	Master string
-	// Kubernetes API server poll time
-	PollTime time.Duration
+	// Kubernetes API server poll period
+	PollPeriod time.Duration
 
 	// Template delimiters
 	LeftDelimiter  string
@@ -80,7 +81,7 @@ func readConfig(cmd *cobra.Command) error {
 		return err
 	}
 
-	if err := viper.BindPFlag(CFG_POLL_TIME, cmd.Flags().Lookup(FLAG_POLL_TIME)); err != nil {
+	if err := viper.BindPFlag(CFG_POLL_PERIOD, cmd.Flags().Lookup(FLAG_POLL_PERIOD)); err != nil {
 		return err
 	}
 
@@ -168,7 +169,13 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 	}
 	// Get command line / config options
 	config.Master = viper.GetString(CFG_MASTER)
-	config.PollTime = viper.GetDuration(CFG_POLL_TIME)
+	if viper.IsSet(CFG_POLL_TIME) {
+		config.PollPeriod = viper.GetDuration(CFG_POLL_TIME)
+		glog.Warningf("'%s' parameter is deprecated, use '%s' instead", CFG_POLL_TIME, CFG_POLL_PERIOD)
+	} else {
+		config.PollPeriod = viper.GetDuration(CFG_POLL_PERIOD)
+	}
+	glog.V(2).Infof("poll period set to %v", config.PollPeriod)
 	// Add template descriptors specified by command line
 	cmdTemplates, err := cmd.Flags().GetStringSlice(FLAG_TEMPLATE)
 	if err != nil {

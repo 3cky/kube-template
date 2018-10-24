@@ -38,6 +38,7 @@ const (
 	FLAG_MASTER                  = "master"
 	FLAG_CONFIG                  = "config"
 	FLAG_POLL_TIME               = "poll-time"
+	FLAG_POLL_PERIOD             = "poll-period"
 	FLAG_TEMPLATE                = "template"
 	FLAG_HELP_MD                 = "help-md"
 	FLAG_GUESS_KUBE_API_SETTINGS = "guess-kube-api-settings"
@@ -64,7 +65,9 @@ func initCmd(cmd *cobra.Command) {
 	f.Bool(FLAG_RUN_ONCE, false, "run template processing once and exit")
 	f.Bool(FLAG_GUESS_KUBE_API_SETTINGS, false, "guess Kubernetes API settings from POD environment")
 	f.String(FLAG_MASTER, "", fmt.Sprintf("Kubernetes API server address (default is %s)", DEFAULT_MASTER_HOST))
-	f.DurationP(FLAG_POLL_TIME, "p", 15*time.Second, "Kubernetes API server poll time (0 disables server polling)")
+	f.DurationP(FLAG_POLL_PERIOD, "p", 15*time.Second, "Kubernetes API server poll period (0 disables server polling)")
+	f.Duration(FLAG_POLL_TIME, 15*time.Second, "")
+	_ = f.MarkDeprecated(FLAG_POLL_TIME, "use --"+FLAG_POLL_PERIOD+" instead")
 	f.StringP(FLAG_KUBE_CONFIG, "k", "", "Kubernetes config file to use")
 	f.StringP(FLAG_LEFT_DELIM, "l", "{{", "templating left delimiter")
 	f.StringP(FLAG_RIGHT_DELIM, "r", "}}", "templating right delimiter")
@@ -102,6 +105,13 @@ func runCmd(cmd *cobra.Command, _ []string) {
 		}
 		fmt.Println(out)
 		return
+	}
+
+	if c := cmd.Flags().Changed(FLAG_POLL_TIME); c {
+		if d, err := cmd.Flags().GetDuration(FLAG_POLL_TIME); err == nil {
+			_ = cmd.Flags().Set(FLAG_POLL_PERIOD, d.String())
+		}
+		glog.Warningf("'%s' flag is deprecated, use '%s' instead", CFG_POLL_TIME, CFG_POLL_PERIOD)
 	}
 
 	getConfig := func() (*Config, error) {

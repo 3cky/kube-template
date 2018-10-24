@@ -82,7 +82,7 @@ func (app *App) Start() {
 	// Initial templates processing run
 	app.Run()
 
-	if app.config.PollTime.Nanoseconds() <= 0 {
+	if app.config.PollPeriod.Nanoseconds() <= 0 {
 		<-app.stopCh
 		return
 	}
@@ -91,7 +91,7 @@ func (app *App) Start() {
 		select {
 		case <-app.stopCh:
 			return
-		case <-time.After(app.config.PollTime):
+		case <-time.After(app.config.PollPeriod):
 			app.Run()
 		}
 	}
