@@ -231,3 +231,7 @@ func (cfg *Config) appendTemplateDescriptor(d *TemplateDescriptor) {
 		glog.Warningf("template already added: %s", d.Path)
 	}
 }
+
+func (cfg *Config) PollingEnabled() bool {
+	return !cfg.RunOnce && cfg.PollTime.Nanoseconds() > 0
+}

@@ -15,20 +15,23 @@
 package main
 
 import (
+	"errors"
 	"github.com/golang/glog"
+	"k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/tools/cache"
+	"sort"
+	"sync"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
-	corelisters "k8s.io/client-go/listers/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/exec"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/openstack"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -37,8 +40,12 @@ const (
 )
 
 type Client struct {
-	podLister  corelisters.PodLister
-	kubeClient kubernetes.Interface
+	sync.RWMutex
+	kubeClient      kubernetes.Interface
+	stopCh          chan struct{}
+	useInformers    bool
+	informerFactory informers.SharedInformerFactory
+	listers         map[string]interface{}
 }
 
 func newClientForConfig(cfg *Config, stopCh chan struct{}) (*Client, error) {
@@ -70,51 +77,74 @@ func newClientForConfig(cfg *Config, stopCh chan struct{}) (*Client, error) {
 		return nil, err
 	}
 
-	return newClient(c, stopCh)
+	return newClient(c, stopCh, cfg.PollingEnabled())
 }
 
-func newClient(c kubernetes.Interface, stopCh chan struct{}) (*Client, error) {
-	informerFactory := informers.NewSharedInformerFactory(c, 0)
-
-	podInformer := informerFactory.Core().V1().Pods()
-
-	podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
-			glog.V(4).Infof("added pod:\n%q", obj)
-		},
-		UpdateFunc: func(oldObj, newObj interface{}) {
-			glog.V(4).Infof("updated pod, old:\n%q,\nnew:\n%q", oldObj, newObj)
-		},
-		DeleteFunc: func(obj interface{}) {
-			glog.V(4).Infof("deleted pod:\n%q", obj)
-		},
-	})
-
-	go podInformer.Informer().Run(stopCh)
-
-	cl := &Client{
-		kubeClient: c,
-		podLister:  podInformer.Lister(),
-	}
-
-	return cl, nil
+func newClient(c kubernetes.Interface, stopCh chan struct{}, useInformers bool) (*Client, error) {
+	return &Client{
+		kubeClient:      c,
+		stopCh:          stopCh,
+		useInformers:    useInformers,
+		informerFactory: informers.NewSharedInformerFactory(c, 0),
+		listers:         make(map[string]interface{}),
+	}, nil
 }
 
 func (c *Client) Pods(namespace, selector string) ([]corev1.Pod, error) {
 	glog.V(4).Infof("fetching pods, namespace: %q, selector: %q", namespace, selector)
-	s, err := labels.Parse(selector)
-	if err != nil {
-		return nil, err
+
+	var pods []corev1.Pod
+
+	if c.useInformers {
+		c.RLock()
+		defer c.RUnlock()
+
+		podLister, found := c.listers["podLister"]
+
+		if !found {
+			podInformer := c.informerFactory.Core().V1().Pods()
+
+			podLister = podInformer.Lister()
+
+			c.listers["podLister"] = podLister
+
+			go podInformer.Informer().Run(c.stopCh)
+
+			if synced := cache.WaitForCacheSync(c.stopCh, podInformer.Informer().HasSynced); !synced {
+				return nil, errors.New("pod cache sync failed")
+			}
+		}
+
+		s, err := labels.Parse(selector)
+		if err != nil {
+			return nil, err
+		}
+
+		ps, err := podLister.(v1.PodLister).Pods(namespace).List(s)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, p := range ps {
+			pods = append(pods, *p)
+		}
+	} else {
+		options := metav1.ListOptions{LabelSelector: selector}
+
+		podList, err := c.kubeClient.CoreV1().Pods(namespace).List(options)
+		if err != nil {
+			return nil, err
+		}
+
+		pods = podList.Items
 	}
-	pl, err := c.podLister.Pods(namespace).List(s)
-	if err != nil {
-		return nil, err
-	}
-	var podList []corev1.Pod
-	for _, p := range pl {
-		podList = append(podList, *p)
-	}
-	return podList, nil
+
+	// Make list order stable
+	sort.Slice(pods, func(i, j int) bool {
+		return pods[i].Name < pods[j].Name
+	})
+
+	return pods, nil
 }
 
 func (c *Client) Services(namespace, selector string) ([]corev1.Service, error) {
