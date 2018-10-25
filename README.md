@@ -43,7 +43,7 @@ Usage
       --logtostderr                      log to standard error instead of files (default true)
       --master string                    Kubernetes API server address (default is http://127.0.0.1:8080/)
       --once                             run template processing once and exit
-  -p, --poll-time duration               Kubernetes API server poll time (0 disables server polling) (default 15s)
+  -p, --poll-period duration             Kubernetes API server poll period (0 disables server polling) (default 15s)
   -r, --right-delimiter string           templating right delimiter (default "}}")
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -t, --template stringSlice             adds a new template to watch on disk in the format
