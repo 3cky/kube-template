@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Pod",
+    "plural": "Pods",
+    "namespaces": true
+  },
+  {
+    "name": "Service",
+    "plural": "Services",
+    "namespaces": true
+  },
+  {
+    "name": "ReplicationController",
+    "plural": "ReplicationControllers",
+    "namespaces": true
+  },
+  {
+    "name": "Event",
+    "plural": "Events",
+    "namespaces": true
+  },
+  {
+    "name": "Endpoints",
+    "plural": "Endpoints",
+    "namespaces": true
+  },
+  {
+    "name": "Node",
+    "plural": "Nodes",
+    "namespaces": false
+  },
+  {
+    "name": "Namespace",
+    "plural": "Namespaces",
+    "namespaces": false
+  }
+]

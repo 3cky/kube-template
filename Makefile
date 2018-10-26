@@ -1,4 +1,4 @@
-.PHONY: vendor_install vendor_status vendor_update vendor_sync install build doc fmt lint test vet godep bench
+.PHONY: vendor_install vendor_status vendor_update vendor_sync install build doc fmt gen lint test vet godep bench
 
 PKG_NAME=$(shell basename `pwd`)
 TARGET_OS="linux"
@@ -46,6 +46,9 @@ doc:
 
 fmt:
 	go fmt ./...
+
+gen:
+	go generate
 
 # https://golangci.com/
 # curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.10.2
