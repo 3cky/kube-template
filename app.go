@@ -14,6 +14,7 @@
 
 //go:generate go run cmd/genclient/main.go
 //go:generate go run cmd/gendeps/main.go
+//go:generate go run cmd/gentemplate/main.go
 
 package main
 

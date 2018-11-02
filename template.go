@@ -27,7 +27,6 @@ import (
 
 	"github.com/Masterminds/sprig"
 
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -163,19 +162,16 @@ func (t *Template) Render() (string, error) {
 
 func funcMap(dm *DependencyManager) gotemplate.FuncMap {
 	f := gotemplate.FuncMap{
-		// Kubernetes objects
-		"pods":                   pods(dm),
-		"services":               services(dm),
-		"replicationcontrollers": replicationcontrollers(dm),
-		"events":                 events(dm),
-		"endpoints":              endpoints(dm),
-		"nodes":                  nodes(dm),
-		"namespaces":             namespaces(dm),
-		// Helper functions
+		// Legacy helper functions
 		"toLower":   strings.ToLower,
 		"toUpper":   strings.ToUpper,
 		"toTitle":   strings.Title,
 		"trimSpace": strings.TrimSpace,
+	}
+
+	// Kubernetes objects functions
+	for k, v := range kubeObjectsFuncMap(dm) {
+		f[k] = v
 	}
 
 	// Sprig helper functions
@@ -215,81 +211,4 @@ func parseNamespaceSelector(s ...string) (string, string, error) {
 		return "", "", fmt.Errorf("expected max 2 arguments, got %d", len(s))
 	}
 	return namespace, selector, nil
-}
-
-// {{pods "selector" "namespace"}}
-func pods(dm *DependencyManager) func(...string) ([]corev1.Pod, error) {
-	return func(s ...string) ([]corev1.Pod, error) {
-		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
-			return dm.Pods(namespace, selector)
-		} else {
-			return nil, err
-		}
-	}
-}
-
-// {{services "selector" "namespace"}}
-func services(dm *DependencyManager) func(...string) ([]corev1.Service, error) {
-	return func(s ...string) ([]corev1.Service, error) {
-		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
-			return dm.Services(namespace, selector)
-		} else {
-			return nil, err
-		}
-	}
-}
-
-// {{replicationcontrollers "selector" "namespace"}}
-func replicationcontrollers(dm *DependencyManager) func(...string) ([]corev1.ReplicationController, error) {
-	return func(s ...string) ([]corev1.ReplicationController, error) {
-		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
-			return dm.ReplicationControllers(namespace, selector)
-		} else {
-			return nil, err
-		}
-	}
-}
-
-// {{events "selector" "namespace"}}
-func events(dm *DependencyManager) func(...string) ([]corev1.Event, error) {
-	return func(s ...string) ([]corev1.Event, error) {
-		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
-			return dm.Events(namespace, selector)
-		} else {
-			return nil, err
-		}
-	}
-}
-
-// {{endpoints "selector" "namespace"}}
-func endpoints(dm *DependencyManager) func(...string) ([]corev1.Endpoints, error) {
-	return func(s ...string) ([]corev1.Endpoints, error) {
-		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
-			return dm.Endpoints(namespace, selector)
-		} else {
-			return nil, err
-		}
-	}
-}
-
-// {{nodes "selector"}}
-func nodes(dm *DependencyManager) func(...string) ([]corev1.Node, error) {
-	return func(s ...string) ([]corev1.Node, error) {
-		if selector, err := parseSelector(s...); err == nil {
-			return dm.Nodes(selector)
-		} else {
-			return nil, err
-		}
-	}
-}
-
-// {{namespaces "selector"}}
-func namespaces(dm *DependencyManager) func(...string) ([]corev1.Namespace, error) {
-	return func(s ...string) ([]corev1.Namespace, error) {
-		if selector, err := parseSelector(s...); err == nil {
-			return dm.Namespaces(selector)
-		} else {
-			return nil, err
-		}
-	}
 }
