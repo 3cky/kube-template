@@ -233,5 +233,5 @@ func (cfg *Config) appendTemplateDescriptor(d *TemplateDescriptor) {
 }
 
 func (cfg *Config) PollingEnabled() bool {
-	return !cfg.RunOnce && cfg.PollTime.Nanoseconds() > 0
+	return !cfg.RunOnce && cfg.PollPeriod.Nanoseconds() > 0
 }
