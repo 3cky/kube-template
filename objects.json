@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Pod",
+    "plural": "Pods",
+    "namespaces": true
+  },
+  {
+    "name": "Service",
+    "plural": "Services",
+    "namespaces": true
+  },
+  {
+    "name": "ReplicationController",
+    "plural": "ReplicationControllers",
+    "namespaces": true
+  },
+  {
+    "name": "Event",
+    "plural": "Events",
+    "namespaces": true
+  },
+  {
+    "name": "Endpoints",
+    "plural": "Endpoints",
+    "namespaces": true
+  },
+  {
+    "name": "Node",
+    "plural": "Nodes",
+    "namespaces": false
+  },
+  {
+    "name": "Namespace",
+    "plural": "Namespaces",
+    "namespaces": false
+  },
+  {
+    "name": "ComponentStatus",
+    "plural": "ComponentStatuses",
+    "namespaces": false
+  },
+  {
+    "name": "ConfigMap",
+    "plural": "ConfigMaps",
+    "namespaces": true
+  },
+  {
+    "name": "LimitRange",
+    "plural": "LimitRanges",
+    "namespaces": true
+  },
+  {
+    "name": "PersistentVolume",
+    "plural": "PersistentVolumes",
+    "namespaces": false
+  },
+  {
+    "name": "PersistentVolumeClaim",
+    "plural": "PersistentVolumeClaims",
+    "namespaces": true
+  },
+  {
+    "name": "PodTemplate",
+    "plural": "PodTemplates",
+    "namespaces": true
+  },
+  {
+    "name": "ResourceQuota",
+    "plural": "ResourceQuotas",
+    "namespaces": true
+  },
+  {
+    "name": "Secret",
+    "plural": "Secrets",
+    "namespaces": true
+  },
+  {
+    "name": "ServiceAccount",
+    "plural": "ServiceAccounts",
+    "namespaces": true
+  }
+]
