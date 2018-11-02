@@ -112,3 +112,120 @@ func (dm *DependencyManager) Namespaces(selector string) ([]corev1.Namespace, er
 	dm.cacheDependency(key, namespaces)
 	return namespaces, nil
 }
+
+func (dm *DependencyManager) ComponentStatuses(selector string) ([]corev1.ComponentStatus, error) {
+	key := fmt.Sprintf("componentstatuses(%s)", selector)
+	if value, found := dm.cachedDependency(key); found {
+		return value.([]corev1.ComponentStatus), nil
+	}
+	componentstatuses, err := dm.client.ComponentStatuses(selector)
+	if err != nil {
+		return nil, err
+	}
+	dm.cacheDependency(key, componentstatuses)
+	return componentstatuses, nil
+}
+
+func (dm *DependencyManager) ConfigMaps(namespace, selector string) ([]corev1.ConfigMap, error) {
+	key := fmt.Sprintf("configmaps(%s,%s)", namespace, selector)
+	if value, found := dm.cachedDependency(key); found {
+		return value.([]corev1.ConfigMap), nil
+	}
+	configmaps, err := dm.client.ConfigMaps(namespace, selector)
+	if err != nil {
+		return nil, err
+	}
+	dm.cacheDependency(key, configmaps)
+	return configmaps, nil
+}
+
+func (dm *DependencyManager) LimitRanges(namespace, selector string) ([]corev1.LimitRange, error) {
+	key := fmt.Sprintf("limitranges(%s,%s)", namespace, selector)
+	if value, found := dm.cachedDependency(key); found {
+		return value.([]corev1.LimitRange), nil
+	}
+	limitranges, err := dm.client.LimitRanges(namespace, selector)
+	if err != nil {
+		return nil, err
+	}
+	dm.cacheDependency(key, limitranges)
+	return limitranges, nil
+}
+
+func (dm *DependencyManager) PersistentVolumes(selector string) ([]corev1.PersistentVolume, error) {
+	key := fmt.Sprintf("persistentvolumes(%s)", selector)
+	if value, found := dm.cachedDependency(key); found {
+		return value.([]corev1.PersistentVolume), nil
+	}
+	persistentvolumes, err := dm.client.PersistentVolumes(selector)
+	if err != nil {
+		return nil, err
+	}
+	dm.cacheDependency(key, persistentvolumes)
+	return persistentvolumes, nil
+}
+
+func (dm *DependencyManager) PersistentVolumeClaims(namespace, selector string) ([]corev1.PersistentVolumeClaim, error) {
+	key := fmt.Sprintf("persistentvolumeclaims(%s,%s)", namespace, selector)
+	if value, found := dm.cachedDependency(key); found {
+		return value.([]corev1.PersistentVolumeClaim), nil
+	}
+	persistentvolumeclaims, err := dm.client.PersistentVolumeClaims(namespace, selector)
+	if err != nil {
+		return nil, err
+	}
+	dm.cacheDependency(key, persistentvolumeclaims)
+	return persistentvolumeclaims, nil
+}
+
+func (dm *DependencyManager) PodTemplates(namespace, selector string) ([]corev1.PodTemplate, error) {
+	key := fmt.Sprintf("podtemplates(%s,%s)", namespace, selector)
+	if value, found := dm.cachedDependency(key); found {
+		return value.([]corev1.PodTemplate), nil
+	}
+	podtemplates, err := dm.client.PodTemplates(namespace, selector)
+	if err != nil {
+		return nil, err
+	}
+	dm.cacheDependency(key, podtemplates)
+	return podtemplates, nil
+}
+
+func (dm *DependencyManager) ResourceQuotas(namespace, selector string) ([]corev1.ResourceQuota, error) {
+	key := fmt.Sprintf("resourcequotas(%s,%s)", namespace, selector)
+	if value, found := dm.cachedDependency(key); found {
+		return value.([]corev1.ResourceQuota), nil
+	}
+	resourcequotas, err := dm.client.ResourceQuotas(namespace, selector)
+	if err != nil {
+		return nil, err
+	}
+	dm.cacheDependency(key, resourcequotas)
+	return resourcequotas, nil
+}
+
+func (dm *DependencyManager) Secrets(namespace, selector string) ([]corev1.Secret, error) {
+	key := fmt.Sprintf("secrets(%s,%s)", namespace, selector)
+	if value, found := dm.cachedDependency(key); found {
+		return value.([]corev1.Secret), nil
+	}
+	secrets, err := dm.client.Secrets(namespace, selector)
+	if err != nil {
+		return nil, err
+	}
+	dm.cacheDependency(key, secrets)
+	return secrets, nil
+}
+
+func (dm *DependencyManager) ServiceAccounts(namespace, selector string) ([]corev1.ServiceAccount, error) {
+	key := fmt.Sprintf("serviceaccounts(%s,%s)", namespace, selector)
+	if value, found := dm.cachedDependency(key); found {
+		return value.([]corev1.ServiceAccount), nil
+	}
+	serviceaccounts, err := dm.client.ServiceAccounts(namespace, selector)
+	if err != nil {
+		return nil, err
+	}
+	dm.cacheDependency(key, serviceaccounts)
+	return serviceaccounts, nil
+}

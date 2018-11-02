@@ -29,6 +29,15 @@ func kubeObjectsFuncMap(dm *DependencyManager) map[string]interface{} {
 		"endpoints":              endpoints(dm),
 		"nodes":                  nodes(dm),
 		"namespaces":             namespaces(dm),
+		"componentstatuses":      componentstatuses(dm),
+		"configmaps":             configmaps(dm),
+		"limitranges":            limitranges(dm),
+		"persistentvolumes":      persistentvolumes(dm),
+		"persistentvolumeclaims": persistentvolumeclaims(dm),
+		"podtemplates":           podtemplates(dm),
+		"resourcequotas":         resourcequotas(dm),
+		"secrets":                secrets(dm),
+		"serviceaccounts":        serviceaccounts(dm),
 	}
 }
 
@@ -103,6 +112,105 @@ func namespaces(dm *DependencyManager) func(...string) ([]corev1.Namespace, erro
 	return func(s ...string) ([]corev1.Namespace, error) {
 		if selector, err := parseSelector(s...); err == nil {
 			return dm.Namespaces(selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{componentstatuses "selector"}}
+func componentstatuses(dm *DependencyManager) func(...string) ([]corev1.ComponentStatus, error) {
+	return func(s ...string) ([]corev1.ComponentStatus, error) {
+		if selector, err := parseSelector(s...); err == nil {
+			return dm.ComponentStatuses(selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{configmaps "selector" "namespace"}}
+func configmaps(dm *DependencyManager) func(...string) ([]corev1.ConfigMap, error) {
+	return func(s ...string) ([]corev1.ConfigMap, error) {
+		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
+			return dm.ConfigMaps(namespace, selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{limitranges "selector" "namespace"}}
+func limitranges(dm *DependencyManager) func(...string) ([]corev1.LimitRange, error) {
+	return func(s ...string) ([]corev1.LimitRange, error) {
+		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
+			return dm.LimitRanges(namespace, selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{persistentvolumes "selector"}}
+func persistentvolumes(dm *DependencyManager) func(...string) ([]corev1.PersistentVolume, error) {
+	return func(s ...string) ([]corev1.PersistentVolume, error) {
+		if selector, err := parseSelector(s...); err == nil {
+			return dm.PersistentVolumes(selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{persistentvolumeclaims "selector" "namespace"}}
+func persistentvolumeclaims(dm *DependencyManager) func(...string) ([]corev1.PersistentVolumeClaim, error) {
+	return func(s ...string) ([]corev1.PersistentVolumeClaim, error) {
+		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
+			return dm.PersistentVolumeClaims(namespace, selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{podtemplates "selector" "namespace"}}
+func podtemplates(dm *DependencyManager) func(...string) ([]corev1.PodTemplate, error) {
+	return func(s ...string) ([]corev1.PodTemplate, error) {
+		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
+			return dm.PodTemplates(namespace, selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{resourcequotas "selector" "namespace"}}
+func resourcequotas(dm *DependencyManager) func(...string) ([]corev1.ResourceQuota, error) {
+	return func(s ...string) ([]corev1.ResourceQuota, error) {
+		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
+			return dm.ResourceQuotas(namespace, selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{secrets "selector" "namespace"}}
+func secrets(dm *DependencyManager) func(...string) ([]corev1.Secret, error) {
+	return func(s ...string) ([]corev1.Secret, error) {
+		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
+			return dm.Secrets(namespace, selector)
+		} else {
+			return nil, err
+		}
+	}
+}
+
+// {{serviceaccounts "selector" "namespace"}}
+func serviceaccounts(dm *DependencyManager) func(...string) ([]corev1.ServiceAccount, error) {
+	return func(s ...string) ([]corev1.ServiceAccount, error) {
+		if namespace, selector, err := parseNamespaceSelector(s...); err == nil {
+			return dm.ServiceAccounts(namespace, selector)
 		} else {
 			return nil, err
 		}

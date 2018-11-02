@@ -110,7 +110,7 @@ ___Please note___: templates specified on the command line take precedence over 
 ```
 {{pods "selector" "namespace"}}
 ```
-Query Kubernetes API server for [pods](https://kubernetes.io/docs/user-guide/pods/) from given `namespace` (`default` if not specified) matching given `selector` (empty to get all pods).
+Query Kubernetes API server for [pods](https://kubernetes.io/docs/concepts/workloads/pods/pod/) from given `namespace` (`default` if not specified) matching given `selector` (empty to get all pods).
  
 Example:
 ```
@@ -123,38 +123,91 @@ Example:
 ```
 {{services "selector" "namespace"}}
 ```
-Query Kubernetes API server for [services](https://kubernetes.io/docs/user-guide/services/) from given `namespace` (`default` if not specified) matching given `selector` (empty to get all services).
+Query Kubernetes API server for [services](https://kubernetes.io/docs/concepts/services-networking/service/) from given `namespace` (`default` if not specified) matching given `selector` (empty to get all services).
 
 ##### `replicationcontrollers`
 ```
 {{replicationcontrollers "selector" "namespace"}}
 ```
-Query Kubernetes API server for [replication controllers](https://kubernetes.io/docs/user-guide/replication-controller/) from given `namespace` (`default` if not specified) matching given `selector` (empty to get all replication controllers).
+Query Kubernetes API server for [replication controllers](https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller/) from given `namespace` (`default` if not specified) matching given `selector` (empty to get all replication controllers).
 
 ##### `events`
 ```
 {{events "selector" "namespace"}}
 ```
-Query Kubernetes API server for events from given `namespace` (`default` if not specified) matching given `selector` (empty to get all events). 
+Query Kubernetes API server for events from given `namespace` (`default` if not specified) matching given `selector` (empty to get all events).
 
 ##### `endpoints`
 ```
 {{endpoints "selector" "namespace"}}
 ```
-Query Kubernetes API server for endpoints from given `namespace` (`default` if not specified) matching given `selector` (empty to get all endpoints). 
+Query Kubernetes API server for endpoints from given `namespace` (`default` if not specified) matching given `selector` (empty to get all endpoints).
 
 ##### `nodes`
 ```
 {{nodes "selector"}}
 ```
-Query Kubernetes API server for nodes matching given `selector` (empty to get all nodes). 
+Query Kubernetes API server for nodes matching given `selector` (empty to get all nodes).
 
 ##### `namespaces`
 ```
 {{namespaces "selector"}}
 ```
-Query Kubernetes API server for namespaces matching given `selector` (empty to get all namespaces). 
+Query Kubernetes API server for namespaces matching given `selector` (empty to get all namespaces).
 
+##### `componentstatuses`
+```
+{{componentstatuses "selector"}}
+```
+Query Kubernetes API server for component statuses matching given `selector` (empty to get all componentstatuses).
+
+##### `configmaps`
+```
+{{configmaps "selector" "namespace"}}
+```
+Query Kubernetes API server for config maps from given `namespace` (`default` if not specified) matching given `selector` (empty to get all configmaps).
+
+##### `limitranges`
+```
+{{limitranges "selector" "namespace"}}
+```
+Query Kubernetes API server for limit ranges from given `namespace` (`default` if not specified) matching given `selector` (empty to get all limitranges).
+
+##### `persistentvolumes`
+```
+{{persistentvolumes "selector"}}
+```
+Query Kubernetes API server for persistent volumes matching given `selector` (empty to get all persistentvolumes).
+
+##### `persistentvolumeclaims`
+```
+{{persistentvolumeclaims "selector" "namespace"}}
+```
+Query Kubernetes API server for persistent volume claims from given `namespace` (`default` if not specified) matching given `selector` (empty to get all persistentvolumeclaims).
+
+##### `podtemplates`
+```
+{{podtemplates "selector" "namespace"}}
+```
+Query Kubernetes API server for pod templates from given `namespace` (`default` if not specified) matching given `selector` (empty to get all podtemplates).
+
+##### `resourcequotas`
+```
+{{resourcequotas "selector" "namespace"}}
+```
+Query Kubernetes API server for resource quotas from given `namespace` (`default` if not specified) matching given `selector` (empty to get all resourcequotas).
+
+##### `secrets`
+```
+{{secrets "selector" "namespace"}}
+```
+Query Kubernetes API server for secrets from given `namespace` (`default` if not specified) matching given `selector` (empty to get all secrets).
+
+##### `serviceaccounts`
+```
+{{serviceaccounts "selector" "namespace"}}
+```
+Query Kubernetes API server for service accounts from given `namespace` (`default` if not specified) matching given `selector` (empty to get all serviceaccounts).
 - - -
 
 #### Helper Functions
@@ -192,10 +245,6 @@ listen test-pod-balancer
     server stub 127.0.0.1:7690 backup
 {{end}}
 ```
-
-### TODO
-* Track Kubernetes changes using resource watch API
-* More API and helper template functions
 
 ## Contributing
 

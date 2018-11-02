@@ -427,3 +427,516 @@ func (c *Client) Namespaces(selector string) ([]corev1.Namespace, error) {
 
 	return namespaces, nil
 }
+
+func (c *Client) ComponentStatuses(selector string) ([]corev1.ComponentStatus, error) {
+	glog.V(4).Infof("fetching componentstatuses, selector: %q", selector)
+
+	var componentstatuses []corev1.ComponentStatus
+
+	if c.useInformers {
+		c.RLock()
+		defer c.RUnlock()
+
+		componentstatusLister, found := c.listers["componentstatusLister"]
+
+		if !found {
+			componentstatusInformer := c.informerFactory.Core().V1().ComponentStatuses()
+
+			componentstatusLister = componentstatusInformer.Lister()
+
+			c.listers["componentstatusLister"] = componentstatusLister
+
+			go componentstatusInformer.Informer().Run(c.stopCh)
+
+			if synced := cache.WaitForCacheSync(c.stopCh, componentstatusInformer.Informer().HasSynced); !synced {
+				return nil, errors.New("componentstatus cache sync failed")
+			}
+		}
+
+		s, err := labels.Parse(selector)
+		if err != nil {
+			return nil, err
+		}
+
+		es, err := componentstatusLister.(v1.ComponentStatusLister).List(s)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, e := range es {
+			componentstatuses = append(componentstatuses, *e)
+		}
+	} else {
+		options := metav1.ListOptions{LabelSelector: selector}
+
+		componentstatusList, err := c.kubeClient.CoreV1().ComponentStatuses().List(options)
+		if err != nil {
+			return nil, err
+		}
+
+		componentstatuses = componentstatusList.Items
+	}
+
+	// Make list order stable
+	sort.Slice(componentstatuses, func(i, j int) bool {
+		return componentstatuses[i].Name < componentstatuses[j].Name
+	})
+
+	return componentstatuses, nil
+}
+
+func (c *Client) ConfigMaps(namespace, selector string) ([]corev1.ConfigMap, error) {
+	glog.V(4).Infof("fetching configmaps, namespace: %q, selector: %q", namespace, selector)
+
+	var configmaps []corev1.ConfigMap
+
+	if c.useInformers {
+		c.RLock()
+		defer c.RUnlock()
+
+		configmapLister, found := c.listers["configmapLister"]
+
+		if !found {
+			configmapInformer := c.informerFactory.Core().V1().ConfigMaps()
+
+			configmapLister = configmapInformer.Lister()
+
+			c.listers["configmapLister"] = configmapLister
+
+			go configmapInformer.Informer().Run(c.stopCh)
+
+			if synced := cache.WaitForCacheSync(c.stopCh, configmapInformer.Informer().HasSynced); !synced {
+				return nil, errors.New("configmap cache sync failed")
+			}
+		}
+
+		s, err := labels.Parse(selector)
+		if err != nil {
+			return nil, err
+		}
+
+		es, err := configmapLister.(v1.ConfigMapLister).ConfigMaps(namespace).List(s)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, e := range es {
+			configmaps = append(configmaps, *e)
+		}
+	} else {
+		options := metav1.ListOptions{LabelSelector: selector}
+
+		configmapList, err := c.kubeClient.CoreV1().ConfigMaps(namespace).List(options)
+		if err != nil {
+			return nil, err
+		}
+
+		configmaps = configmapList.Items
+	}
+
+	// Make list order stable
+	sort.Slice(configmaps, func(i, j int) bool {
+		return configmaps[i].Name < configmaps[j].Name
+	})
+
+	return configmaps, nil
+}
+
+func (c *Client) LimitRanges(namespace, selector string) ([]corev1.LimitRange, error) {
+	glog.V(4).Infof("fetching limitranges, namespace: %q, selector: %q", namespace, selector)
+
+	var limitranges []corev1.LimitRange
+
+	if c.useInformers {
+		c.RLock()
+		defer c.RUnlock()
+
+		limitrangeLister, found := c.listers["limitrangeLister"]
+
+		if !found {
+			limitrangeInformer := c.informerFactory.Core().V1().LimitRanges()
+
+			limitrangeLister = limitrangeInformer.Lister()
+
+			c.listers["limitrangeLister"] = limitrangeLister
+
+			go limitrangeInformer.Informer().Run(c.stopCh)
+
+			if synced := cache.WaitForCacheSync(c.stopCh, limitrangeInformer.Informer().HasSynced); !synced {
+				return nil, errors.New("limitrange cache sync failed")
+			}
+		}
+
+		s, err := labels.Parse(selector)
+		if err != nil {
+			return nil, err
+		}
+
+		es, err := limitrangeLister.(v1.LimitRangeLister).LimitRanges(namespace).List(s)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, e := range es {
+			limitranges = append(limitranges, *e)
+		}
+	} else {
+		options := metav1.ListOptions{LabelSelector: selector}
+
+		limitrangeList, err := c.kubeClient.CoreV1().LimitRanges(namespace).List(options)
+		if err != nil {
+			return nil, err
+		}
+
+		limitranges = limitrangeList.Items
+	}
+
+	// Make list order stable
+	sort.Slice(limitranges, func(i, j int) bool {
+		return limitranges[i].Name < limitranges[j].Name
+	})
+
+	return limitranges, nil
+}
+
+func (c *Client) PersistentVolumes(selector string) ([]corev1.PersistentVolume, error) {
+	glog.V(4).Infof("fetching persistentvolumes, selector: %q", selector)
+
+	var persistentvolumes []corev1.PersistentVolume
+
+	if c.useInformers {
+		c.RLock()
+		defer c.RUnlock()
+
+		persistentvolumeLister, found := c.listers["persistentvolumeLister"]
+
+		if !found {
+			persistentvolumeInformer := c.informerFactory.Core().V1().PersistentVolumes()
+
+			persistentvolumeLister = persistentvolumeInformer.Lister()
+
+			c.listers["persistentvolumeLister"] = persistentvolumeLister
+
+			go persistentvolumeInformer.Informer().Run(c.stopCh)
+
+			if synced := cache.WaitForCacheSync(c.stopCh, persistentvolumeInformer.Informer().HasSynced); !synced {
+				return nil, errors.New("persistentvolume cache sync failed")
+			}
+		}
+
+		s, err := labels.Parse(selector)
+		if err != nil {
+			return nil, err
+		}
+
+		es, err := persistentvolumeLister.(v1.PersistentVolumeLister).List(s)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, e := range es {
+			persistentvolumes = append(persistentvolumes, *e)
+		}
+	} else {
+		options := metav1.ListOptions{LabelSelector: selector}
+
+		persistentvolumeList, err := c.kubeClient.CoreV1().PersistentVolumes().List(options)
+		if err != nil {
+			return nil, err
+		}
+
+		persistentvolumes = persistentvolumeList.Items
+	}
+
+	// Make list order stable
+	sort.Slice(persistentvolumes, func(i, j int) bool {
+		return persistentvolumes[i].Name < persistentvolumes[j].Name
+	})
+
+	return persistentvolumes, nil
+}
+
+func (c *Client) PersistentVolumeClaims(namespace, selector string) ([]corev1.PersistentVolumeClaim, error) {
+	glog.V(4).Infof("fetching persistentvolumeclaims, namespace: %q, selector: %q", namespace, selector)
+
+	var persistentvolumeclaims []corev1.PersistentVolumeClaim
+
+	if c.useInformers {
+		c.RLock()
+		defer c.RUnlock()
+
+		persistentvolumeclaimLister, found := c.listers["persistentvolumeclaimLister"]
+
+		if !found {
+			persistentvolumeclaimInformer := c.informerFactory.Core().V1().PersistentVolumeClaims()
+
+			persistentvolumeclaimLister = persistentvolumeclaimInformer.Lister()
+
+			c.listers["persistentvolumeclaimLister"] = persistentvolumeclaimLister
+
+			go persistentvolumeclaimInformer.Informer().Run(c.stopCh)
+
+			if synced := cache.WaitForCacheSync(c.stopCh, persistentvolumeclaimInformer.Informer().HasSynced); !synced {
+				return nil, errors.New("persistentvolumeclaim cache sync failed")
+			}
+		}
+
+		s, err := labels.Parse(selector)
+		if err != nil {
+			return nil, err
+		}
+
+		es, err := persistentvolumeclaimLister.(v1.PersistentVolumeClaimLister).PersistentVolumeClaims(namespace).List(s)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, e := range es {
+			persistentvolumeclaims = append(persistentvolumeclaims, *e)
+		}
+	} else {
+		options := metav1.ListOptions{LabelSelector: selector}
+
+		persistentvolumeclaimList, err := c.kubeClient.CoreV1().PersistentVolumeClaims(namespace).List(options)
+		if err != nil {
+			return nil, err
+		}
+
+		persistentvolumeclaims = persistentvolumeclaimList.Items
+	}
+
+	// Make list order stable
+	sort.Slice(persistentvolumeclaims, func(i, j int) bool {
+		return persistentvolumeclaims[i].Name < persistentvolumeclaims[j].Name
+	})
+
+	return persistentvolumeclaims, nil
+}
+
+func (c *Client) PodTemplates(namespace, selector string) ([]corev1.PodTemplate, error) {
+	glog.V(4).Infof("fetching podtemplates, namespace: %q, selector: %q", namespace, selector)
+
+	var podtemplates []corev1.PodTemplate
+
+	if c.useInformers {
+		c.RLock()
+		defer c.RUnlock()
+
+		podtemplateLister, found := c.listers["podtemplateLister"]
+
+		if !found {
+			podtemplateInformer := c.informerFactory.Core().V1().PodTemplates()
+
+			podtemplateLister = podtemplateInformer.Lister()
+
+			c.listers["podtemplateLister"] = podtemplateLister
+
+			go podtemplateInformer.Informer().Run(c.stopCh)
+
+			if synced := cache.WaitForCacheSync(c.stopCh, podtemplateInformer.Informer().HasSynced); !synced {
+				return nil, errors.New("podtemplate cache sync failed")
+			}
+		}
+
+		s, err := labels.Parse(selector)
+		if err != nil {
+			return nil, err
+		}
+
+		es, err := podtemplateLister.(v1.PodTemplateLister).PodTemplates(namespace).List(s)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, e := range es {
+			podtemplates = append(podtemplates, *e)
+		}
+	} else {
+		options := metav1.ListOptions{LabelSelector: selector}
+
+		podtemplateList, err := c.kubeClient.CoreV1().PodTemplates(namespace).List(options)
+		if err != nil {
+			return nil, err
+		}
+
+		podtemplates = podtemplateList.Items
+	}
+
+	// Make list order stable
+	sort.Slice(podtemplates, func(i, j int) bool {
+		return podtemplates[i].Name < podtemplates[j].Name
+	})
+
+	return podtemplates, nil
+}
+
+func (c *Client) ResourceQuotas(namespace, selector string) ([]corev1.ResourceQuota, error) {
+	glog.V(4).Infof("fetching resourcequotas, namespace: %q, selector: %q", namespace, selector)
+
+	var resourcequotas []corev1.ResourceQuota
+
+	if c.useInformers {
+		c.RLock()
+		defer c.RUnlock()
+
+		resourcequotaLister, found := c.listers["resourcequotaLister"]
+
+		if !found {
+			resourcequotaInformer := c.informerFactory.Core().V1().ResourceQuotas()
+
+			resourcequotaLister = resourcequotaInformer.Lister()
+
+			c.listers["resourcequotaLister"] = resourcequotaLister
+
+			go resourcequotaInformer.Informer().Run(c.stopCh)
+
+			if synced := cache.WaitForCacheSync(c.stopCh, resourcequotaInformer.Informer().HasSynced); !synced {
+				return nil, errors.New("resourcequota cache sync failed")
+			}
+		}
+
+		s, err := labels.Parse(selector)
+		if err != nil {
+			return nil, err
+		}
+
+		es, err := resourcequotaLister.(v1.ResourceQuotaLister).ResourceQuotas(namespace).List(s)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, e := range es {
+			resourcequotas = append(resourcequotas, *e)
+		}
+	} else {
+		options := metav1.ListOptions{LabelSelector: selector}
+
+		resourcequotaList, err := c.kubeClient.CoreV1().ResourceQuotas(namespace).List(options)
+		if err != nil {
+			return nil, err
+		}
+
+		resourcequotas = resourcequotaList.Items
+	}
+
+	// Make list order stable
+	sort.Slice(resourcequotas, func(i, j int) bool {
+		return resourcequotas[i].Name < resourcequotas[j].Name
+	})
+
+	return resourcequotas, nil
+}
+
+func (c *Client) Secrets(namespace, selector string) ([]corev1.Secret, error) {
+	glog.V(4).Infof("fetching secrets, namespace: %q, selector: %q", namespace, selector)
+
+	var secrets []corev1.Secret
+
+	if c.useInformers {
+		c.RLock()
+		defer c.RUnlock()
+
+		secretLister, found := c.listers["secretLister"]
+
+		if !found {
+			secretInformer := c.informerFactory.Core().V1().Secrets()
+
+			secretLister = secretInformer.Lister()
+
+			c.listers["secretLister"] = secretLister
+
+			go secretInformer.Informer().Run(c.stopCh)
+
+			if synced := cache.WaitForCacheSync(c.stopCh, secretInformer.Informer().HasSynced); !synced {
+				return nil, errors.New("secret cache sync failed")
+			}
+		}
+
+		s, err := labels.Parse(selector)
+		if err != nil {
+			return nil, err
+		}
+
+		es, err := secretLister.(v1.SecretLister).Secrets(namespace).List(s)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, e := range es {
+			secrets = append(secrets, *e)
+		}
+	} else {
+		options := metav1.ListOptions{LabelSelector: selector}
+
+		secretList, err := c.kubeClient.CoreV1().Secrets(namespace).List(options)
+		if err != nil {
+			return nil, err
+		}
+
+		secrets = secretList.Items
+	}
+
+	// Make list order stable
+	sort.Slice(secrets, func(i, j int) bool {
+		return secrets[i].Name < secrets[j].Name
+	})
+
+	return secrets, nil
+}
+
+func (c *Client) ServiceAccounts(namespace, selector string) ([]corev1.ServiceAccount, error) {
+	glog.V(4).Infof("fetching serviceaccounts, namespace: %q, selector: %q", namespace, selector)
+
+	var serviceaccounts []corev1.ServiceAccount
+
+	if c.useInformers {
+		c.RLock()
+		defer c.RUnlock()
+
+		serviceaccountLister, found := c.listers["serviceaccountLister"]
+
+		if !found {
+			serviceaccountInformer := c.informerFactory.Core().V1().ServiceAccounts()
+
+			serviceaccountLister = serviceaccountInformer.Lister()
+
+			c.listers["serviceaccountLister"] = serviceaccountLister
+
+			go serviceaccountInformer.Informer().Run(c.stopCh)
+
+			if synced := cache.WaitForCacheSync(c.stopCh, serviceaccountInformer.Informer().HasSynced); !synced {
+				return nil, errors.New("serviceaccount cache sync failed")
+			}
+		}
+
+		s, err := labels.Parse(selector)
+		if err != nil {
+			return nil, err
+		}
+
+		es, err := serviceaccountLister.(v1.ServiceAccountLister).ServiceAccounts(namespace).List(s)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, e := range es {
+			serviceaccounts = append(serviceaccounts, *e)
+		}
+	} else {
+		options := metav1.ListOptions{LabelSelector: selector}
+
+		serviceaccountList, err := c.kubeClient.CoreV1().ServiceAccounts(namespace).List(options)
+		if err != nil {
+			return nil, err
+		}
+
+		serviceaccounts = serviceaccountList.Items
+	}
+
+	// Make list order stable
+	sort.Slice(serviceaccounts, func(i, j int) bool {
+		return serviceaccounts[i].Name < serviceaccounts[j].Name
+	})
+
+	return serviceaccounts, nil
+}
