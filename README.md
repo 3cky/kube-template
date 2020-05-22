@@ -31,6 +31,7 @@ Usage
 
 ```
       --alsologtostderr                  log to standard error as well as files
+      --command-timeout duration         Default command execution timeout (0 to execute commands without timeout checking) (default 15s)
   -c, --config string                    config file (default is ./kube-template.(yaml|json))
       --dry-run                          don't write template output, dump result to stdout
       --guess-kube-api-settings          guess Kubernetes API settings from POD environment
@@ -82,12 +83,14 @@ $ kube-template \
  
 ```yaml
  master: http://localhost:8080
- poll-time: 10s
- 
+ poll-period: 10s
+ command-timeout: 30s
+
  templates:
    - path: in.txt.tmpl
      output: out.txt
      command: action.sh
+     command-timeout: 60s
 
    - path: in.html.tmpl
      output: out.html

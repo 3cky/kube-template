@@ -25,10 +25,11 @@ import (
 )
 
 const (
-	CFG_FILE        = "kube-template"
-	CFG_MASTER      = FLAG_MASTER
-	CFG_POLL_TIME   = FLAG_POLL_TIME
-	CFG_POLL_PERIOD = FLAG_POLL_PERIOD
+	CfgFile           = "kube-template"
+	CfgMaster         = FlagMaster
+	CfgPollTime       = FlagPollTime
+	CfgPollPeriod     = FlagPollPeriod
+	CfgCommandTimeout = FlagCommandTimeout
 )
 
 var cfgFile string
@@ -46,6 +47,8 @@ type Config struct {
 	Master string
 	// Kubernetes API server poll period
 	PollPeriod time.Duration
+	// Command execution timeout
+	CommandTimeout time.Duration
 
 	// Template delimiters
 	LeftDelimiter  string
@@ -65,23 +68,29 @@ type TemplateDescriptor struct {
 	Output string
 	// Optional command to execute after template output updating
 	Command string
+	// Command timeout
+	CommandTimeout time.Duration
 }
 
 func readConfig(cmd *cobra.Command) error {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile) // specify config file set by flag
 	} else {
-		viper.SetConfigName(CFG_FILE) // default name of config file (without extension)
-		viper.AddConfigPath(".")      // adding home directory as first search path
+		viper.SetConfigName(CfgFile) // default name of config file (without extension)
+		viper.AddConfigPath(".")     // adding home directory as first search path
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	if err := viper.BindPFlag(CFG_MASTER, cmd.Flags().Lookup(FLAG_MASTER)); err != nil {
+	if err := viper.BindPFlag(CfgMaster, cmd.Flags().Lookup(FlagMaster)); err != nil {
 		return err
 	}
 
-	if err := viper.BindPFlag(CFG_POLL_PERIOD, cmd.Flags().Lookup(FLAG_POLL_PERIOD)); err != nil {
+	if err := viper.BindPFlag(CfgPollPeriod, cmd.Flags().Lookup(FlagPollPeriod)); err != nil {
+		return err
+	}
+
+	if err := viper.BindPFlag(CfgCommandTimeout, cmd.Flags().Lookup(FlagCommandTimeout)); err != nil {
 		return err
 	}
 
@@ -129,34 +138,34 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 	// Create empty config
 	config := new(Config)
 	// Get command-line only options
-	dryRun, err := cmd.Flags().GetBool(FLAG_DRY_RUN)
+	dryRun, err := cmd.Flags().GetBool(FlagDryRun)
 	if err != nil {
 		return nil, err
 	}
 	config.DryRun = dryRun
-	runOnce, err := cmd.Flags().GetBool(FLAG_RUN_ONCE)
+	runOnce, err := cmd.Flags().GetBool(FlagRunOnce)
 	if err != nil {
 		return nil, err
 	}
 	config.RunOnce = runOnce
-	guessKubeAPISettings, err := cmd.Flags().GetBool(FLAG_GUESS_KUBE_API_SETTINGS)
+	guessKubeAPISettings, err := cmd.Flags().GetBool(FlagGuessKubeApiSettings)
 	if err != nil {
 		return nil, err
 	}
 	config.GuessKubeAPISettings = guessKubeAPISettings
-	kubeConfig, err := cmd.Flags().GetString(FLAG_KUBE_CONFIG)
+	kubeConfig, err := cmd.Flags().GetString(FlagKubeConfig)
 	if err != nil {
 		return nil, err
 	}
 	config.KubeConfig = kubeConfig
 
-	leftDelimiter, err := cmd.Flags().GetString(FLAG_LEFT_DELIM)
+	leftDelimiter, err := cmd.Flags().GetString(FlagLeftDelim)
 	if err != nil {
 		return nil, err
 	}
 	config.LeftDelimiter = leftDelimiter
 
-	rightDelimiter, err := cmd.Flags().GetString(FLAG_RIGHT_DELIM)
+	rightDelimiter, err := cmd.Flags().GetString(FlagRightDelim)
 	if err != nil {
 		return nil, err
 	}
@@ -168,16 +177,18 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 		return nil, err
 	}
 	// Get command line / config options
-	config.Master = viper.GetString(CFG_MASTER)
-	if viper.IsSet(CFG_POLL_TIME) {
-		config.PollPeriod = viper.GetDuration(CFG_POLL_TIME)
-		glog.Warningf("'%s' parameter is deprecated, use '%s' instead", CFG_POLL_TIME, CFG_POLL_PERIOD)
+	config.Master = viper.GetString(CfgMaster)
+	if viper.IsSet(CfgPollTime) {
+		config.PollPeriod = viper.GetDuration(CfgPollTime)
+		glog.Warningf("'%s' parameter is deprecated, use '%s' instead", CfgPollTime, CfgPollPeriod)
 	} else {
-		config.PollPeriod = viper.GetDuration(CFG_POLL_PERIOD)
+		config.PollPeriod = viper.GetDuration(CfgPollPeriod)
 	}
 	glog.V(2).Infof("poll period set to %v", config.PollPeriod)
+	config.CommandTimeout = viper.GetDuration(FlagCommandTimeout)
+	glog.V(2).Infof("command timeout set to %v", config.CommandTimeout)
 	// Add template descriptors specified by command line
-	cmdTemplates, err := cmd.Flags().GetStringSlice(FLAG_TEMPLATE)
+	cmdTemplates, err := cmd.Flags().GetStringSlice(FlagTemplate)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +206,7 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 	// Merge template descriptors from config file
 	if iCfgTemplates := viper.Get("templates"); iCfgTemplates != nil {
 		for _, iCfgTemplate := range iCfgTemplates.([]interface{}) {
-			cfgTemplate := iCfgTemplate.(map[interface{}](interface{}))
+			cfgTemplate := iCfgTemplate.(map[interface{}]interface{})
 			// Check template path and output path are present
 			iPath, pathPresent := cfgTemplate["path"]
 			iOutput, outputPresent := cfgTemplate["output"]
@@ -204,16 +215,27 @@ func newConfig(cmd *cobra.Command) (*Config, error) {
 				continue
 			}
 			path, output := iPath.(string), iOutput.(string)
-			// Command is optional
+			// Command and its timeout are optional
 			var cmd string
 			if iCmd, cmdPresent := cfgTemplate["command"]; cmdPresent {
 				cmd = iCmd.(string)
 			}
+			cmdTimeout := config.CommandTimeout
+			if iCmdTimeout, cmdTimeoutPresent := cfgTemplate[FlagCommandTimeout]; cmdTimeoutPresent {
+				if i, ok := iCmdTimeout.(int); ok {
+					cmdTimeout = time.Duration(i) * time.Second
+				} else if d, err := time.ParseDuration(iCmdTimeout.(string)); err == nil {
+					cmdTimeout = d
+				} else {
+					glog.Warningf("ignoring invalid command timeout value: %v", iCmdTimeout)
+				}
+			}
 			// Add template descriptor
 			d := &TemplateDescriptor{
-				Path:    path,
-				Output:  output,
-				Command: cmd,
+				Path:           path,
+				Output:         output,
+				Command:        cmd,
+				CommandTimeout: cmdTimeout,
 			}
 			glog.V(2).Infof("adding template from config file: %s", d.Path)
 			config.appendTemplateDescriptor(d)

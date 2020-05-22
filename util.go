@@ -21,6 +21,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sync"
 	"syscall"
 	"time"
 
@@ -71,6 +72,9 @@ func Execute(command string, timeout time.Duration) error {
 	}
 	defer CloseQuietly(stderr)
 
+	timeoutFlag := false
+	var timeoutFlagLock sync.RWMutex
+
 	// Start command execution
 	if err := cmd.Start(); err != nil {
 		return err
@@ -80,7 +84,12 @@ func Execute(command string, timeout time.Duration) error {
 	result := make(chan error, 1)
 	defer close(result)
 	go func() {
-		result <- cmd.Wait()
+		err := cmd.Wait()
+		timeoutFlagLock.RLock()
+		defer timeoutFlagLock.RUnlock()
+		if !timeoutFlag {
+			result <- err
+		}
 	}()
 
 	// Log stdout/stderr
@@ -103,19 +112,27 @@ func Execute(command string, timeout time.Duration) error {
 		}
 	}()
 
-	// Wait for result or timeout
+	// Wait for result indefinitely if no timeout set
+	if timeout == 0 {
+		return <-result
+	}
+
+	// Wait for result for given duration if timeout set
 	select {
 	case <-time.After(timeout):
+		timeoutFlagLock.Lock()
+		defer timeoutFlagLock.Unlock()
+		timeoutFlag = true
 		if cmd.Process != nil {
 			if err := cmd.Process.Kill(); err != nil {
-				glog.Errorf("timeout: %q, not killed: %v", command, err)
+				glog.Errorf("timeout (%v): %q, not killed: %v", timeout, command, err)
 			} else {
-				glog.Warningf("timeout: %q, killed", command)
+				glog.Warningf("timeout (%v): %q, killed", timeout, command)
 			}
 		} else {
-			glog.Warningf("timeout: %q, nothing to kill", command)
+			glog.Warningf("timeout (%v): %q, nothing to kill", timeout, command)
 		}
-		return fmt.Errorf("timeout: %q", command)
+		return fmt.Errorf("timeout (%v): %q", timeout, command)
 	case err := <-result:
 		return err
 	}

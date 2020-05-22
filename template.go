@@ -31,8 +31,8 @@ import (
 )
 
 const (
-	DEFAULT_NAMESPACE = metav1.NamespaceDefault
-	DEFAULT_SELECTOR  = ""
+	DefaultNamespace = metav1.NamespaceDefault
+	DefaultSelector  = ""
 )
 
 type Template struct {
@@ -184,7 +184,7 @@ func funcMap(dm *DependencyManager) gotemplate.FuncMap {
 
 // Parse template tag with max 1 argument - selector
 func parseSelector(s ...string) (string, error) {
-	selector := DEFAULT_SELECTOR
+	selector := DefaultSelector
 	switch len(s) {
 	case 0:
 		break
@@ -198,7 +198,7 @@ func parseSelector(s ...string) (string, error) {
 
 // Parse template tag with max 2 arguments - selector and namespace (in given order)
 func parseNamespaceSelector(s ...string) (string, string, error) {
-	namespace, selector := DEFAULT_NAMESPACE, DEFAULT_SELECTOR
+	namespace, selector := DefaultNamespace, DefaultSelector
 	switch len(s) {
 	case 0:
 		break

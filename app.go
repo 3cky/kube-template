@@ -110,6 +110,7 @@ func (app *App) RunOnce() {
 func (app *App) Run() {
 	// Commands to execute are stored in list instead of map to ensure correct execution order
 	var commands []string
+	commandTimeouts := make(map[string]time.Duration)
 	// Flush cached dependencies
 	app.dm.flushCachedDependencies()
 	// Process templates
@@ -133,6 +134,7 @@ func (app *App) Run() {
 					if !IsPresent(commands, cmd) {
 						glog.V(4).Infof("template %s: scheduled command: %q", t.name, cmd)
 						commands = append(commands, cmd)
+						commandTimeouts[cmd] = t.desc.CommandTimeout
 					} else {
 						glog.V(4).Infof("template %s: command already scheduled: %q", t.name, cmd)
 					}
@@ -148,7 +150,7 @@ func (app *App) Run() {
 	for _, cmd := range commands {
 		if !app.dryRun {
 			glog.V(4).Infof("executing: %q", cmd)
-			if err := Execute(cmd, time.Second); err == nil {
+			if err := Execute(cmd, commandTimeouts[cmd]); err == nil {
 				glog.V(4).Infof("executed: %q", cmd)
 			} else {
 				glog.Errorf("command %q: %v", cmd, err)

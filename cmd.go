@@ -32,19 +32,20 @@ import (
 )
 
 const (
-	FLAG_VERSION                 = "version"
-	FLAG_RUN_ONCE                = "once"
-	FLAG_DRY_RUN                 = "dry-run"
-	FLAG_MASTER                  = "master"
-	FLAG_CONFIG                  = "config"
-	FLAG_POLL_TIME               = "poll-time"
-	FLAG_POLL_PERIOD             = "poll-period"
-	FLAG_TEMPLATE                = "template"
-	FLAG_HELP_MD                 = "help-md"
-	FLAG_GUESS_KUBE_API_SETTINGS = "guess-kube-api-settings"
-	FLAG_KUBE_CONFIG             = "kube-config"
-	FLAG_LEFT_DELIM              = "left-delimiter"
-	FLAG_RIGHT_DELIM             = "right-delimiter"
+	FlagVersion              = "version"
+	FlagRunOnce              = "once"
+	FlagDryRun               = "dry-run"
+	FlagMaster               = "master"
+	FlagConfig               = "config"
+	FlagPollTime             = "poll-time"
+	FlagPollPeriod           = "poll-period"
+	FlagTemplate             = "template"
+	FlagHelpMd               = "help-md"
+	FlagGuessKubeApiSettings = "guess-kube-api-settings"
+	FlagKubeConfig           = "kube-config"
+	FlagLeftDelim            = "left-delimiter"
+	FlagRightDelim           = "right-delimiter"
+	FlagCommandTimeout       = "command-timeout"
 )
 
 func newCmd() *cobra.Command {
@@ -60,22 +61,23 @@ func newCmd() *cobra.Command {
 func initCmd(cmd *cobra.Command) {
 	// Command-related flags set
 	f := cmd.Flags()
-	f.Bool(FLAG_VERSION, false, "display the version number and build timestamp")
-	f.Bool(FLAG_DRY_RUN, false, "don't write template output, dump result to stdout")
-	f.Bool(FLAG_RUN_ONCE, false, "run template processing once and exit")
-	f.Bool(FLAG_GUESS_KUBE_API_SETTINGS, false, "guess Kubernetes API settings from POD environment")
-	f.String(FLAG_MASTER, "", fmt.Sprintf("Kubernetes API server address (default is %s)", DEFAULT_MASTER_HOST))
-	f.DurationP(FLAG_POLL_PERIOD, "p", 15*time.Second, "Kubernetes API server poll period (0 disables server polling)")
-	f.Duration(FLAG_POLL_TIME, 15*time.Second, "")
-	_ = f.MarkDeprecated(FLAG_POLL_TIME, "use --"+FLAG_POLL_PERIOD+" instead")
-	f.StringP(FLAG_KUBE_CONFIG, "k", "", "Kubernetes config file to use")
-	f.StringP(FLAG_LEFT_DELIM, "l", "{{", "templating left delimiter")
-	f.StringP(FLAG_RIGHT_DELIM, "r", "}}", "templating right delimiter")
-	f.StringVarP(&cfgFile, FLAG_CONFIG, "c", "", fmt.Sprintf("config file (default is ./%s.(yaml|json))", CFG_FILE))
-	f.StringSliceP(FLAG_TEMPLATE, "t", nil, `adds a new template to watch on disk in the format
+	f.Bool(FlagVersion, false, "display the version number and build timestamp")
+	f.Bool(FlagDryRun, false, "don't write template output, dump result to stdout")
+	f.Bool(FlagRunOnce, false, "run template processing once and exit")
+	f.Bool(FlagGuessKubeApiSettings, false, "guess Kubernetes API settings from POD environment")
+	f.String(FlagMaster, "", fmt.Sprintf("Kubernetes API server address (default is %s)", DEFAULT_MASTER_HOST))
+	f.DurationP(FlagPollPeriod, "p", 15*time.Second, "Kubernetes API server poll period (0 disables server polling)")
+	f.Duration(FlagPollTime, 15*time.Second, "")
+	_ = f.MarkDeprecated(FlagPollTime, "use --"+FlagPollPeriod+" instead")
+	f.StringP(FlagKubeConfig, "k", "", "Kubernetes config file to use")
+	f.StringP(FlagLeftDelim, "l", "{{", "templating left delimiter")
+	f.StringP(FlagRightDelim, "r", "}}", "templating right delimiter")
+	f.StringVarP(&cfgFile, FlagConfig, "c", "", fmt.Sprintf("config file (default is ./%s.(yaml|json))", CfgFile))
+	f.StringSliceP(FlagTemplate, "t", nil, `adds a new template to watch on disk in the format
 		'templatePath:outputPath[:command]'. This option is additive
 		and may be specified multiple times for multiple templates`)
-	f.Bool(FLAG_HELP_MD, false, "get help in Markdown format")
+	f.Duration(FlagCommandTimeout, 15*time.Second, "Default command execution timeout (0 to execute commands without timeout checking)")
+	f.Bool(FlagHelpMd, false, "get help in Markdown format")
 	// Merge flags
 	pflag.CommandLine.SetNormalizeFunc(func(_ *pflag.FlagSet, name string) pflag.NormalizedName {
 		if strings.Contains(name, "_") {
@@ -91,13 +93,13 @@ func initCmd(cmd *cobra.Command) {
 }
 
 func runCmd(cmd *cobra.Command, _ []string) {
-	if f, _ := cmd.Flags().GetBool(FLAG_VERSION); f {
+	if f, _ := cmd.Flags().GetBool(FlagVersion); f {
 		fmt.Printf("Build version: %s\n", BuildVersion)
 		fmt.Printf("Build timestamp: %s\n", BuildTimestamp)
 		return
 	}
 
-	if f, _ := cmd.Flags().GetBool(FLAG_HELP_MD); f {
+	if f, _ := cmd.Flags().GetBool(FlagHelpMd); f {
 		out := new(bytes.Buffer)
 		if err := doc.GenMarkdown(cmd, out); err != nil {
 			fmt.Printf("can't generate help in markdown format: %v", err)
@@ -107,11 +109,11 @@ func runCmd(cmd *cobra.Command, _ []string) {
 		return
 	}
 
-	if c := cmd.Flags().Changed(FLAG_POLL_TIME); c {
-		if d, err := cmd.Flags().GetDuration(FLAG_POLL_TIME); err == nil {
-			_ = cmd.Flags().Set(FLAG_POLL_PERIOD, d.String())
+	if c := cmd.Flags().Changed(FlagPollTime); c {
+		if d, err := cmd.Flags().GetDuration(FlagPollTime); err == nil {
+			_ = cmd.Flags().Set(FlagPollPeriod, d.String())
 		}
-		glog.Warningf("'%s' flag is deprecated, use '%s' instead", CFG_POLL_TIME, CFG_POLL_PERIOD)
+		glog.Warningf("'%s' flag is deprecated, use '%s' instead", CfgPollTime, CfgPollPeriod)
 	}
 
 	getConfig := func() (*Config, error) {
