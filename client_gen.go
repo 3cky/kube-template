@@ -17,6 +17,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"sort"
 
@@ -70,7 +71,7 @@ func (c *Client) Pods(namespace, selector string) ([]corev1.Pod, error) {
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		podList, err := c.kubeClient.CoreV1().Pods(namespace).List(options)
+		podList, err := c.kubeClient.CoreV1().Pods(namespace).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -127,7 +128,7 @@ func (c *Client) Services(namespace, selector string) ([]corev1.Service, error) 
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		serviceList, err := c.kubeClient.CoreV1().Services(namespace).List(options)
+		serviceList, err := c.kubeClient.CoreV1().Services(namespace).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -184,7 +185,7 @@ func (c *Client) ReplicationControllers(namespace, selector string) ([]corev1.Re
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		replicationcontrollerList, err := c.kubeClient.CoreV1().ReplicationControllers(namespace).List(options)
+		replicationcontrollerList, err := c.kubeClient.CoreV1().ReplicationControllers(namespace).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -241,7 +242,7 @@ func (c *Client) Events(namespace, selector string) ([]corev1.Event, error) {
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		eventList, err := c.kubeClient.CoreV1().Events(namespace).List(options)
+		eventList, err := c.kubeClient.CoreV1().Events(namespace).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -298,7 +299,7 @@ func (c *Client) Endpoints(namespace, selector string) ([]corev1.Endpoints, erro
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		endpointsList, err := c.kubeClient.CoreV1().Endpoints(namespace).List(options)
+		endpointsList, err := c.kubeClient.CoreV1().Endpoints(namespace).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -355,7 +356,7 @@ func (c *Client) Nodes(selector string) ([]corev1.Node, error) {
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		nodeList, err := c.kubeClient.CoreV1().Nodes().List(options)
+		nodeList, err := c.kubeClient.CoreV1().Nodes().List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -412,7 +413,7 @@ func (c *Client) Namespaces(selector string) ([]corev1.Namespace, error) {
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		namespaceList, err := c.kubeClient.CoreV1().Namespaces().List(options)
+		namespaceList, err := c.kubeClient.CoreV1().Namespaces().List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -469,7 +470,7 @@ func (c *Client) ComponentStatuses(selector string) ([]corev1.ComponentStatus, e
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		componentstatusList, err := c.kubeClient.CoreV1().ComponentStatuses().List(options)
+		componentstatusList, err := c.kubeClient.CoreV1().ComponentStatuses().List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -526,7 +527,7 @@ func (c *Client) ConfigMaps(namespace, selector string) ([]corev1.ConfigMap, err
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		configmapList, err := c.kubeClient.CoreV1().ConfigMaps(namespace).List(options)
+		configmapList, err := c.kubeClient.CoreV1().ConfigMaps(namespace).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -583,7 +584,7 @@ func (c *Client) LimitRanges(namespace, selector string) ([]corev1.LimitRange, e
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		limitrangeList, err := c.kubeClient.CoreV1().LimitRanges(namespace).List(options)
+		limitrangeList, err := c.kubeClient.CoreV1().LimitRanges(namespace).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -640,7 +641,7 @@ func (c *Client) PersistentVolumes(selector string) ([]corev1.PersistentVolume, 
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		persistentvolumeList, err := c.kubeClient.CoreV1().PersistentVolumes().List(options)
+		persistentvolumeList, err := c.kubeClient.CoreV1().PersistentVolumes().List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -697,7 +698,7 @@ func (c *Client) PersistentVolumeClaims(namespace, selector string) ([]corev1.Pe
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		persistentvolumeclaimList, err := c.kubeClient.CoreV1().PersistentVolumeClaims(namespace).List(options)
+		persistentvolumeclaimList, err := c.kubeClient.CoreV1().PersistentVolumeClaims(namespace).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -754,7 +755,7 @@ func (c *Client) PodTemplates(namespace, selector string) ([]corev1.PodTemplate,
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		podtemplateList, err := c.kubeClient.CoreV1().PodTemplates(namespace).List(options)
+		podtemplateList, err := c.kubeClient.CoreV1().PodTemplates(namespace).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -811,7 +812,7 @@ func (c *Client) ResourceQuotas(namespace, selector string) ([]corev1.ResourceQu
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		resourcequotaList, err := c.kubeClient.CoreV1().ResourceQuotas(namespace).List(options)
+		resourcequotaList, err := c.kubeClient.CoreV1().ResourceQuotas(namespace).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -868,7 +869,7 @@ func (c *Client) Secrets(namespace, selector string) ([]corev1.Secret, error) {
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		secretList, err := c.kubeClient.CoreV1().Secrets(namespace).List(options)
+		secretList, err := c.kubeClient.CoreV1().Secrets(namespace).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -925,7 +926,7 @@ func (c *Client) ServiceAccounts(namespace, selector string) ([]corev1.ServiceAc
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		serviceaccountList, err := c.kubeClient.CoreV1().ServiceAccounts(namespace).List(options)
+		serviceaccountList, err := c.kubeClient.CoreV1().ServiceAccounts(namespace).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}

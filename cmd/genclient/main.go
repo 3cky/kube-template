@@ -27,6 +27,7 @@ const (
 package main
 
 import (
+	"context"
 	"errors"
 	"sort"
 	
@@ -80,7 +81,7 @@ func (c *Client) {{.Plural}}({{if .HasNamespaces}}namespace, {{end}}selector str
 	} else {
 		options := metav1.ListOptions{LabelSelector: selector}
 
-		{{.Name|Lower}}List, err := c.kubeClient.CoreV1().{{.Plural}}({{if .HasNamespaces}}namespace{{end}}).List(options)
+		{{.Name|Lower}}List, err := c.kubeClient.CoreV1().{{.Plural}}({{if .HasNamespaces}}namespace{{end}}).List(context.TODO(), options)
 		if err != nil {
 			return nil, err
 		}
