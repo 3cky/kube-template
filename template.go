@@ -25,7 +25,7 @@ import (
 
 	"strings"
 
-	"github.com/Masterminds/sprig"
+	"github.com/Masterminds/sprig/v3"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

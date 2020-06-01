@@ -10,7 +10,6 @@ Inspired by HashiCorp's [Consul Template][], `kube-template` is a utility that q
 Installation
 ------------
 
-- Install [dep](https://golang.github.io/dep/) tool: `go get -u github.com/golang/dep/cmd/dep`
 - `git pull https://github.com/3cky/kube-template.git`
 - `cd kube-template`
 - `make install`

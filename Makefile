@@ -1,4 +1,4 @@
-.PHONY: vendor_install vendor_status vendor_update vendor_sync install build doc fmt gen lint test vet godep bench
+.PHONY: install build doc fmt gen lint test vet bench
 
 PKG_NAME=$(shell basename `pwd`)
 TARGET_OS="linux"
@@ -12,22 +12,10 @@ CONTAINER_VERSION=$(shell grep "FROM " contrib/docker/Dockerfile | sed 's/FROM .
 
 default: install
 
-vendor_install:
-	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-
-vendor_status:
-	dep status
-
-vendor_update:
-	dep ensure -update
-
-vendor_sync:
-	dep ensure
-
-install: vendor_sync
+install:
 	go get -x $(GOBUILD_VERSION_ARGS) -t -v ./...
 
-build: vendor_sync
+build:
 	go build -x $(GOBUILD_VERSION_ARGS) -v -o ./bin/$(PKG_NAME)
 
 docker: docker_build docker_container

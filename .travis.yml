@@ -1,8 +1,9 @@
 language: go
 
 go:
-  - 1.10.x
-  - 1.11.x
+  - 1.12.x
+  - 1.13.x
+  - 1.14.x
 
 git:
   depth: 1
@@ -18,8 +19,7 @@ notifications:
   email: false
 
 before_script:
-  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.10.2
-  - make vendor_install vendor_sync
+  - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
 
 script:
   - make lint build test
