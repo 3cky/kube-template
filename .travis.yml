@@ -1,7 +1,6 @@
 language: go
 
 go:
-  - 1.12.x
   - 1.13.x
   - 1.14.x
 
@@ -22,4 +21,4 @@ before_script:
   - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
 
 script:
-  - env GO111MODULE=on make build test lint
+  - make build test lint

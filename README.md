@@ -10,6 +10,7 @@ Inspired by HashiCorp's [Consul Template][], `kube-template` is a utility that q
 Installation
 ------------
 
+Go 1.13+ is required to build `kube-template`. Check your version with `go version` before build.
 - `git pull https://github.com/3cky/kube-template.git`
 - `cd kube-template`
 - `make install`

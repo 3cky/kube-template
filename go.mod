@@ -1,6 +1,6 @@
 module github.com/3cky/kube-template
 
-go 1.12
+go 1.13
 
 require (
 	github.com/Masterminds/sprig/v3 v3.1.0
