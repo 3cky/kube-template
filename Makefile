@@ -39,9 +39,9 @@ gen:
 	go generate
 
 # https://golangci.com/
-# curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.10.2
+# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
 lint:
-	golangci-lint run
+	golangci-lint run --timeout=300s
 
 test:
 	go test ./...
