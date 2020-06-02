@@ -8,3 +8,4 @@ _test
 bin/
 pkg/
 vendor/*/
+*.sh

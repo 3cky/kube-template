@@ -15,6 +15,7 @@
 package main
 
 import (
+	v1 "k8s.io/api/core/v1"
 	"sync"
 
 	"k8s.io/client-go/informers"
@@ -33,11 +34,11 @@ const (
 
 type Client struct {
 	sync.RWMutex
-	kubeClient      kubernetes.Interface
-	stopCh          chan struct{}
-	useInformers    bool
-	informerFactory informers.SharedInformerFactory
-	listers         map[string]interface{}
+	kubeClient        kubernetes.Interface
+	stopCh            chan struct{}
+	useInformers      bool
+	informerFactories map[string]informers.SharedInformerFactory
+	listers           map[string]interface{}
 }
 
 func newClientForConfig(cfg *Config, stopCh chan struct{}) (*Client, error) {
@@ -74,10 +75,26 @@ func newClientForConfig(cfg *Config, stopCh chan struct{}) (*Client, error) {
 
 func newClient(c kubernetes.Interface, stopCh chan struct{}, useInformers bool) (*Client, error) {
 	return &Client{
-		kubeClient:      c,
-		stopCh:          stopCh,
-		useInformers:    useInformers,
-		informerFactory: informers.NewSharedInformerFactory(c, 0),
-		listers:         make(map[string]interface{}),
+		kubeClient:        c,
+		stopCh:            stopCh,
+		useInformers:      useInformers,
+		informerFactories: make(map[string]informers.SharedInformerFactory),
+		listers:           make(map[string]interface{}),
 	}, nil
+}
+
+func (c *Client) informerFactory(namespace string) informers.SharedInformerFactory {
+	if namespace == "" {
+		namespace = v1.NamespaceAll
+	}
+
+	informerFactory, found := c.informerFactories[namespace]
+
+	if !found {
+		informerFactory = informers.NewSharedInformerFactoryWithOptions(c.kubeClient, 0,
+			informers.WithNamespace(namespace))
+		c.informerFactories[namespace] = informerFactory
+	}
+
+	return informerFactory
 }

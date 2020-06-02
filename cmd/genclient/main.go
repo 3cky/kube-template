@@ -29,6 +29,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sort"
 	
 	corev1 "k8s.io/api/core/v1"
@@ -46,17 +47,19 @@ func (c *Client) {{.Plural}}({{if .HasNamespaces}}namespace, {{end}}selector str
 	var {{.Plural|Lower}} []corev1.{{.Name}}
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		{{.Name|Lower}}Lister, found := c.listers["{{.Name|Lower}}Lister"]
+		key := fmt.Sprintf("{{.Plural|Lower}}({{if .HasNamespaces}}%s{{end}})"{{if .HasNamespaces}}, namespace{{end}})
+
+		{{.Name|Lower}}Lister, found := c.listers[key]
 
 		if !found {
-			{{.Name|Lower}}Informer := c.informerFactory.Core().V1().{{.Plural}}()
+			{{.Name|Lower}}Informer := c.informerFactory({{if .HasNamespaces}}namespace{{else}}""{{end}}).Core().V1().{{.Plural}}()
 
 			{{.Name|Lower}}Lister = {{.Name|Lower}}Informer.Lister()
 
-			c.listers["{{.Name|Lower}}Lister"] = {{.Name|Lower}}Lister
+			c.listers[key] = {{.Name|Lower}}Lister
 
 			go {{.Name|Lower}}Informer.Informer().Run(c.stopCh)
 

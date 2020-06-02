@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sort"
 
 	corev1 "k8s.io/api/core/v1"
@@ -36,17 +37,19 @@ func (c *Client) Pods(namespace, selector string) ([]corev1.Pod, error) {
 	var pods []corev1.Pod
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		podLister, found := c.listers["podLister"]
+		key := fmt.Sprintf("pods(%s)", namespace)
+
+		podLister, found := c.listers[key]
 
 		if !found {
-			podInformer := c.informerFactory.Core().V1().Pods()
+			podInformer := c.informerFactory(namespace).Core().V1().Pods()
 
 			podLister = podInformer.Lister()
 
-			c.listers["podLister"] = podLister
+			c.listers[key] = podLister
 
 			go podInformer.Informer().Run(c.stopCh)
 
@@ -93,17 +96,19 @@ func (c *Client) Services(namespace, selector string) ([]corev1.Service, error) 
 	var services []corev1.Service
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		serviceLister, found := c.listers["serviceLister"]
+		key := fmt.Sprintf("services(%s)", namespace)
+
+		serviceLister, found := c.listers[key]
 
 		if !found {
-			serviceInformer := c.informerFactory.Core().V1().Services()
+			serviceInformer := c.informerFactory(namespace).Core().V1().Services()
 
 			serviceLister = serviceInformer.Lister()
 
-			c.listers["serviceLister"] = serviceLister
+			c.listers[key] = serviceLister
 
 			go serviceInformer.Informer().Run(c.stopCh)
 
@@ -150,17 +155,19 @@ func (c *Client) ReplicationControllers(namespace, selector string) ([]corev1.Re
 	var replicationcontrollers []corev1.ReplicationController
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		replicationcontrollerLister, found := c.listers["replicationcontrollerLister"]
+		key := fmt.Sprintf("replicationcontrollers(%s)", namespace)
+
+		replicationcontrollerLister, found := c.listers[key]
 
 		if !found {
-			replicationcontrollerInformer := c.informerFactory.Core().V1().ReplicationControllers()
+			replicationcontrollerInformer := c.informerFactory(namespace).Core().V1().ReplicationControllers()
 
 			replicationcontrollerLister = replicationcontrollerInformer.Lister()
 
-			c.listers["replicationcontrollerLister"] = replicationcontrollerLister
+			c.listers[key] = replicationcontrollerLister
 
 			go replicationcontrollerInformer.Informer().Run(c.stopCh)
 
@@ -207,17 +214,19 @@ func (c *Client) Events(namespace, selector string) ([]corev1.Event, error) {
 	var events []corev1.Event
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		eventLister, found := c.listers["eventLister"]
+		key := fmt.Sprintf("events(%s)", namespace)
+
+		eventLister, found := c.listers[key]
 
 		if !found {
-			eventInformer := c.informerFactory.Core().V1().Events()
+			eventInformer := c.informerFactory(namespace).Core().V1().Events()
 
 			eventLister = eventInformer.Lister()
 
-			c.listers["eventLister"] = eventLister
+			c.listers[key] = eventLister
 
 			go eventInformer.Informer().Run(c.stopCh)
 
@@ -264,17 +273,19 @@ func (c *Client) Endpoints(namespace, selector string) ([]corev1.Endpoints, erro
 	var endpoints []corev1.Endpoints
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		endpointsLister, found := c.listers["endpointsLister"]
+		key := fmt.Sprintf("endpoints(%s)", namespace)
+
+		endpointsLister, found := c.listers[key]
 
 		if !found {
-			endpointsInformer := c.informerFactory.Core().V1().Endpoints()
+			endpointsInformer := c.informerFactory(namespace).Core().V1().Endpoints()
 
 			endpointsLister = endpointsInformer.Lister()
 
-			c.listers["endpointsLister"] = endpointsLister
+			c.listers[key] = endpointsLister
 
 			go endpointsInformer.Informer().Run(c.stopCh)
 
@@ -321,17 +332,19 @@ func (c *Client) Nodes(selector string) ([]corev1.Node, error) {
 	var nodes []corev1.Node
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		nodeLister, found := c.listers["nodeLister"]
+		key := fmt.Sprintf("nodes()")
+
+		nodeLister, found := c.listers[key]
 
 		if !found {
-			nodeInformer := c.informerFactory.Core().V1().Nodes()
+			nodeInformer := c.informerFactory("").Core().V1().Nodes()
 
 			nodeLister = nodeInformer.Lister()
 
-			c.listers["nodeLister"] = nodeLister
+			c.listers[key] = nodeLister
 
 			go nodeInformer.Informer().Run(c.stopCh)
 
@@ -378,17 +391,19 @@ func (c *Client) Namespaces(selector string) ([]corev1.Namespace, error) {
 	var namespaces []corev1.Namespace
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		namespaceLister, found := c.listers["namespaceLister"]
+		key := fmt.Sprintf("namespaces()")
+
+		namespaceLister, found := c.listers[key]
 
 		if !found {
-			namespaceInformer := c.informerFactory.Core().V1().Namespaces()
+			namespaceInformer := c.informerFactory("").Core().V1().Namespaces()
 
 			namespaceLister = namespaceInformer.Lister()
 
-			c.listers["namespaceLister"] = namespaceLister
+			c.listers[key] = namespaceLister
 
 			go namespaceInformer.Informer().Run(c.stopCh)
 
@@ -435,17 +450,19 @@ func (c *Client) ComponentStatuses(selector string) ([]corev1.ComponentStatus, e
 	var componentstatuses []corev1.ComponentStatus
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		componentstatusLister, found := c.listers["componentstatusLister"]
+		key := fmt.Sprintf("componentstatuses()")
+
+		componentstatusLister, found := c.listers[key]
 
 		if !found {
-			componentstatusInformer := c.informerFactory.Core().V1().ComponentStatuses()
+			componentstatusInformer := c.informerFactory("").Core().V1().ComponentStatuses()
 
 			componentstatusLister = componentstatusInformer.Lister()
 
-			c.listers["componentstatusLister"] = componentstatusLister
+			c.listers[key] = componentstatusLister
 
 			go componentstatusInformer.Informer().Run(c.stopCh)
 
@@ -492,17 +509,19 @@ func (c *Client) ConfigMaps(namespace, selector string) ([]corev1.ConfigMap, err
 	var configmaps []corev1.ConfigMap
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		configmapLister, found := c.listers["configmapLister"]
+		key := fmt.Sprintf("configmaps(%s)", namespace)
+
+		configmapLister, found := c.listers[key]
 
 		if !found {
-			configmapInformer := c.informerFactory.Core().V1().ConfigMaps()
+			configmapInformer := c.informerFactory(namespace).Core().V1().ConfigMaps()
 
 			configmapLister = configmapInformer.Lister()
 
-			c.listers["configmapLister"] = configmapLister
+			c.listers[key] = configmapLister
 
 			go configmapInformer.Informer().Run(c.stopCh)
 
@@ -549,17 +568,19 @@ func (c *Client) LimitRanges(namespace, selector string) ([]corev1.LimitRange, e
 	var limitranges []corev1.LimitRange
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		limitrangeLister, found := c.listers["limitrangeLister"]
+		key := fmt.Sprintf("limitranges(%s)", namespace)
+
+		limitrangeLister, found := c.listers[key]
 
 		if !found {
-			limitrangeInformer := c.informerFactory.Core().V1().LimitRanges()
+			limitrangeInformer := c.informerFactory(namespace).Core().V1().LimitRanges()
 
 			limitrangeLister = limitrangeInformer.Lister()
 
-			c.listers["limitrangeLister"] = limitrangeLister
+			c.listers[key] = limitrangeLister
 
 			go limitrangeInformer.Informer().Run(c.stopCh)
 
@@ -606,17 +627,19 @@ func (c *Client) PersistentVolumes(selector string) ([]corev1.PersistentVolume, 
 	var persistentvolumes []corev1.PersistentVolume
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		persistentvolumeLister, found := c.listers["persistentvolumeLister"]
+		key := fmt.Sprintf("persistentvolumes()")
+
+		persistentvolumeLister, found := c.listers[key]
 
 		if !found {
-			persistentvolumeInformer := c.informerFactory.Core().V1().PersistentVolumes()
+			persistentvolumeInformer := c.informerFactory("").Core().V1().PersistentVolumes()
 
 			persistentvolumeLister = persistentvolumeInformer.Lister()
 
-			c.listers["persistentvolumeLister"] = persistentvolumeLister
+			c.listers[key] = persistentvolumeLister
 
 			go persistentvolumeInformer.Informer().Run(c.stopCh)
 
@@ -663,17 +686,19 @@ func (c *Client) PersistentVolumeClaims(namespace, selector string) ([]corev1.Pe
 	var persistentvolumeclaims []corev1.PersistentVolumeClaim
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		persistentvolumeclaimLister, found := c.listers["persistentvolumeclaimLister"]
+		key := fmt.Sprintf("persistentvolumeclaims(%s)", namespace)
+
+		persistentvolumeclaimLister, found := c.listers[key]
 
 		if !found {
-			persistentvolumeclaimInformer := c.informerFactory.Core().V1().PersistentVolumeClaims()
+			persistentvolumeclaimInformer := c.informerFactory(namespace).Core().V1().PersistentVolumeClaims()
 
 			persistentvolumeclaimLister = persistentvolumeclaimInformer.Lister()
 
-			c.listers["persistentvolumeclaimLister"] = persistentvolumeclaimLister
+			c.listers[key] = persistentvolumeclaimLister
 
 			go persistentvolumeclaimInformer.Informer().Run(c.stopCh)
 
@@ -720,17 +745,19 @@ func (c *Client) PodTemplates(namespace, selector string) ([]corev1.PodTemplate,
 	var podtemplates []corev1.PodTemplate
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		podtemplateLister, found := c.listers["podtemplateLister"]
+		key := fmt.Sprintf("podtemplates(%s)", namespace)
+
+		podtemplateLister, found := c.listers[key]
 
 		if !found {
-			podtemplateInformer := c.informerFactory.Core().V1().PodTemplates()
+			podtemplateInformer := c.informerFactory(namespace).Core().V1().PodTemplates()
 
 			podtemplateLister = podtemplateInformer.Lister()
 
-			c.listers["podtemplateLister"] = podtemplateLister
+			c.listers[key] = podtemplateLister
 
 			go podtemplateInformer.Informer().Run(c.stopCh)
 
@@ -777,17 +804,19 @@ func (c *Client) ResourceQuotas(namespace, selector string) ([]corev1.ResourceQu
 	var resourcequotas []corev1.ResourceQuota
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		resourcequotaLister, found := c.listers["resourcequotaLister"]
+		key := fmt.Sprintf("resourcequotas(%s)", namespace)
+
+		resourcequotaLister, found := c.listers[key]
 
 		if !found {
-			resourcequotaInformer := c.informerFactory.Core().V1().ResourceQuotas()
+			resourcequotaInformer := c.informerFactory(namespace).Core().V1().ResourceQuotas()
 
 			resourcequotaLister = resourcequotaInformer.Lister()
 
-			c.listers["resourcequotaLister"] = resourcequotaLister
+			c.listers[key] = resourcequotaLister
 
 			go resourcequotaInformer.Informer().Run(c.stopCh)
 
@@ -834,17 +863,19 @@ func (c *Client) Secrets(namespace, selector string) ([]corev1.Secret, error) {
 	var secrets []corev1.Secret
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		secretLister, found := c.listers["secretLister"]
+		key := fmt.Sprintf("secrets(%s)", namespace)
+
+		secretLister, found := c.listers[key]
 
 		if !found {
-			secretInformer := c.informerFactory.Core().V1().Secrets()
+			secretInformer := c.informerFactory(namespace).Core().V1().Secrets()
 
 			secretLister = secretInformer.Lister()
 
-			c.listers["secretLister"] = secretLister
+			c.listers[key] = secretLister
 
 			go secretInformer.Informer().Run(c.stopCh)
 
@@ -891,17 +922,19 @@ func (c *Client) ServiceAccounts(namespace, selector string) ([]corev1.ServiceAc
 	var serviceaccounts []corev1.ServiceAccount
 
 	if c.useInformers {
-		c.RLock()
-		defer c.RUnlock()
+		c.Lock()
+		defer c.Unlock()
 
-		serviceaccountLister, found := c.listers["serviceaccountLister"]
+		key := fmt.Sprintf("serviceaccounts(%s)", namespace)
+
+		serviceaccountLister, found := c.listers[key]
 
 		if !found {
-			serviceaccountInformer := c.informerFactory.Core().V1().ServiceAccounts()
+			serviceaccountInformer := c.informerFactory(namespace).Core().V1().ServiceAccounts()
 
 			serviceaccountLister = serviceaccountInformer.Lister()
 
-			c.listers["serviceaccountLister"] = serviceaccountLister
+			c.listers[key] = serviceaccountLister
 
 			go serviceaccountInformer.Informer().Run(c.stopCh)
 
